@@ -58,12 +58,8 @@ gigyaService.subscribe((state: { value: any }) => {
   console.log(state.value);
 });
 
-export function sendOnLogin({
-  userInfo,
-}: {
-  userInfo: Record<string, object>;
-}) {
-  gigyaService.send({ type: 'LOGIN', account: userInfo });
+export function sendOnLogin(e: { userInfo: Record<string, object> }) {
+  gigyaService.send({ type: 'LOGIN', account: e });
 }
 
 googleService.subscribe((state: GoogleState) => {

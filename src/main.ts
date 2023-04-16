@@ -23,9 +23,10 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
      
     <div class="vcontainer container">
     <section class="section container" id="not-authenticated"> </section>
-    <section class="container" id="gigya-profile"></section>
 
     <section class="section container" id="authenticated"> </section>
+    <section class="container" id="gigya-profile"></section>
+
         <section class="section container" id="google-container"> </section>
 
         <section class="container" id="properties"></section>
@@ -48,7 +49,6 @@ setupProperties(document.querySelector<HTMLDivElement>('#properties')!);
 setupGigyaProfileContainer(
   document.querySelector<HTMLDivElement>('#gigya-profile')!
 );
-
 
 gigyaService.subscribe((state: GigyaState) => {
   console.log(state);

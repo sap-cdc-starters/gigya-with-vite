@@ -21,16 +21,31 @@ function claims({ account }: { account: Record<string, object> }) {
     </tr> 
   </thead>
   <tbody>
-    ${account && Object.keys(account)
-      .map(
-        (key) => `<tr>
+    ${
+      account &&
+      Object.keys(account)
+        .map(
+          (key) => `<tr>
     <td>${key}</td>
     <td>${account[key]}</td>
   </tr>`
-      )
-      .join(' ')}
+        )
+        .join(' ')
+    }
   </tbody>
   </table>
   </div>
+  `;
+}
+
+
+
+function welcome({ profile: { name, picture } }) {
+  return `
+  <div >
+  <h1 class="float-left">Hello <b>${name}!</b>
+  <img src="${picture}" alt="Avatar" style="padding: 0 2rem 0 2rem; border-radius: 50%;"> </h1>
+  <h3 class="row float-left">Looks like you have authenticated yourself!</h3>
+<div>
   `;
 }
