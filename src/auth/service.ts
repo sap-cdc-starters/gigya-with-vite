@@ -3,6 +3,8 @@
 // import type { OidcJwt } from '@auth/jwt';
 // import { Jwt } from '@auth/jwt';
 
+import { gigyaService, GigyaState } from '@gigya/service';
+
 // const authMachine = createMachine(
 //   {
 //     id: 'auth',
@@ -33,3 +35,7 @@
 // authService.subscribe((state: { value: any }) => {
 //   console.log(state.value);
 // });
+
+gigyaService.subscribe((state: GigyaState) => {
+  console.log(state);
+});

@@ -26,7 +26,9 @@
       "@auth/*": ["./src/auth/*"],
       "@auth": ["./src/auth/index"],
       "@google/*": ["./src/google/*"],
-      "@google": ["./src/google/index"]
+      "@google": ["./src/google/index"],
+      "@gigya/*": ["./src/gigya/*"],
+      "@gigya": ["./src/gigya/index"]
     }
   },
   "include": ["src/**/*"]

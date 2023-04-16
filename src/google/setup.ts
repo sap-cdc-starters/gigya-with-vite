@@ -19,8 +19,10 @@ export function setupGoogleLogin(element: HTMLDivElement) {
   script.defer = true;
   document.head.appendChild(script);
 
+  // const client_id =
+  //   '837888262468-mmhoc2t6afsnsu1vadflf4qu7vqm307s.apps.googleusercontent.com';
   const client_id =
-    '837888262468-mmhoc2t6afsnsu1vadflf4qu7vqm307s.apps.googleusercontent.com';
+    '837888262468-7jrglbtjdgmdvdihj1qsdtc3b3rtfjvm.apps.googleusercontent.com';
   const context = 'use';
   const ux_mode = 'popup';
   const itp_support = 'true';
