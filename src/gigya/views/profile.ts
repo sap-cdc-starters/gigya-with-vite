@@ -4,12 +4,12 @@ import type { GigyaState } from '@gigya/service';
 export function setupGigyaProfileContainer(element: HTMLDivElement) {
   gigyaService.subscribe((state: GigyaState) => {
     if (state.matches('authenticated')) {
-      const {account} = state.context || {} as Account;
+      const {account} = state.context || {};
       const {firstName, nickName, photoURL, email} = account?.profile || {} ;
         element.innerHTML = `
             <div>
                 ${welcome({name: nickName ?? firstName ?? email, picture: photoURL})} 
-                ${claims(account)}
+                ${account && claims(account)}
             </div>`;
     }
     element.style.display = state.matches('authenticated') ? 'inline' : 'none';
