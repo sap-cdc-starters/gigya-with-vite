@@ -5,7 +5,7 @@ export function setupLoginContainer(element: HTMLDivElement) {
    
   element.innerHTML = `  
   <div  class="vcontainer" >
-    <p class="float-left">To proceed with testing the authentication flow, use the login button 👇 </p>
+    <p class="centered">To proceed with testing the authentication flow, use the login button 👇 </p>
     <button id="login-button" class="centered" >Login</button>
   </div>
  `;
