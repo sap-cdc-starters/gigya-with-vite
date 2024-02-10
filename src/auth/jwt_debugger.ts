@@ -1,10 +1,9 @@
-import type { OidcJwt, Jwt } from '@auth/jwt';
+import type {  Jwt } from '@auth/jwt';
 
-export function dumpJwt({ id_token }: { id_token: OidcJwt }) {
+export function dumpJwt({ id_token }: { id_token: Jwt }) {
   return (
     (id_token &&
       ` <div class="vcontainer" >
-      ${welcome(id_token)} 
     ${claims(id_token)}
     ${raw(id_token)}
     </div>`) ||
@@ -12,15 +11,8 @@ export function dumpJwt({ id_token }: { id_token: OidcJwt }) {
   );
 }
 
-function welcome({ claims: { name, picture } }: OidcJwt) {
-  return `
-  <div >
-  <h1 class="float-left">Hello <b>${name}!</b>
-  <img src="${picture}" alt="Avatar" style="padding: 0 2rem 0 2rem; border-radius: 50%;"> </h1>
-  <h3 class="row float-left">Looks like you have authenticated yourself!</h3>
-<div>
-  `;
-}
+ 
+
 
 function raw({ raw }: Jwt) {
   return ` <div>
@@ -30,10 +22,19 @@ function raw({ raw }: Jwt) {
  <div>`;
 }
 
+function flatten(claims: [string, any][]): [string, any][]{
+  return  claims.flatMap(([key, value]) => {
+    if (typeof value === 'object') {
+      return flatten(Object.entries(value).map(([k, v]) => [`${key}.${k}`, v]));
+    }
+    return [ [key, value]]
+  })
+}
+
 function claims({ claims }: Jwt) {
   return ` 
   <div>
-   <p class="row float-left"><b>Here is the info I recovered about your profile in your Google account:</b></p>
+   <p class="row float-left"><b>Here is the clamis I recovered from ypur Jwt token:</b></p>
   <table id="token-table">
   <thead>
     <tr>
@@ -42,11 +43,11 @@ function claims({ claims }: Jwt) {
     </tr> 
   </thead>
   <tbody>
-    ${Object.keys(claims)
+    ${flatten(Object.entries(claims))
       .map(
-        (key) => `<tr>
+          ([key,value]) => `<tr>
     <td>${key}</td>
-    <td>${claims[key]}</td>
+    <td>${value}</td>
   </tr>`
       )
       .join(' ')}

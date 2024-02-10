@@ -1,30 +1,53 @@
+import {gigyaService} from "@gigya";
+
 export function setupProperties(element: HTMLDivElement) {
-  element.innerHTML = `
-  <p>The following info is being requested:</p>
+  let elements =[] as string[];
+  
+  gigyaService.subscribe((state) => {
+    console.log(state);
+    
+    elements.push(` <tr>
+        <td>-</td>
+        <td>${state.value}</td>
+        <td>..</td>
+        ${Object.keys(state.context).map((key) => {
+            return `<tr>
+            <td>--</td>
+            <td>${key}</td>
+            <td>${state?.context?[key] : "" }</td>
+            </tr>`;
+        }
+        )}
+      </tr>
+      `);
+
+      element.innerHTML = `
+  <p>Event log</p>
   <table>
     <thead>
       <tr>
-        <th>API</th>
-        <th>Scope</th>
+        <th>State</th>
+        <th>Event</th>
         <th>Description</th>
       </tr>
     </thead>
     <tbody>
+    ${ elements.join('')}
+    </tbody>
+  </table>`;
+  });
+  element.innerHTML = `
+  <p>Event log</p>
+  <table>
+    <thead>
       <tr>
-        <td>-</td>
-        <td>.../auth/userinfo.email</td>
-        <td>See your primary Google Account email address</td>
+        <th>State</th>
+        <th>Event</th>
+        <th>Description</th>
       </tr>
-      <tr>
-        <td>-</td>
-        <td>.../auth/userinfo.profile</td>
-        <td>See your personal info, including any personal info you've made publicly available</td>
-      </tr>
-      <tr>
-        <td>-</td>
-        <td>openid</td>
-        <td>Associate you with your personal info on Google</td>
-      </tr>
+    </thead>
+    <tbody>
+    ${ elements.join('')}
     </tbody>
   </table>`;
 }

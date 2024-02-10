@@ -1,3 +1,5 @@
+import * as accounts from "accounts";
+
 export declare module gigya {
 
   declare type BaseApiJson = Pick<BaseApi, "methodName"> & Partial<BaseApi>;
@@ -357,7 +359,7 @@ export declare module gigya {
   type ConflictHandling = {};
 
   module socialize {
-    const login: Runner<{
+    export const login: Runner<{
       methodName: "socialize.login";
       settings: {
         oauth: true;
@@ -373,7 +375,7 @@ export declare module gigya {
       altSessionParams: undefined;
     }>;
 
-    const addConnection: Runner<{
+    export const addConnection: Runner<{
       methodName: "socialize.addConnection";
       settings: {
         oauth: true;
@@ -387,7 +389,7 @@ export declare module gigya {
       altSessionParams: undefined;
     }>;
 
-    const requestPermissions: Runner<{
+    export  const requestPermissions: Runner<{
       methodName: "socialize.requestPermissions";
       settings: {
         oauth: true;
@@ -404,7 +406,7 @@ export declare module gigya {
       altSessionParams: undefined;
     }>;
 
-    const showLoginUI_v2: Runner<{
+    export  const showLoginUI_v2: Runner<{
       methodName: "showLoginUI_v2";
       settings: {
         useBasePlugin: true;
@@ -421,7 +423,7 @@ export declare module gigya {
       };
     }>;
 
-    const showAddConnectionsUI_v2: Runner<{
+    export   const showAddConnectionsUI_v2: Runner<{
       methodName: "showAddConnectionsUI_v2";
       settings: {
         useBasePlugin: true;
@@ -438,7 +440,7 @@ export declare module gigya {
       };
     }>;
 
-    const showEditConnectionsUI: Runner<{
+    export   const showEditConnectionsUI: Runner<{
       methodName: "showEditConnectionsUI";
       settings: {
         useBasePlugin: true;
@@ -681,8 +683,8 @@ export declare module gigya {
 
   }
 
-  module 'accounts' {
-    const socialLogin: Runner<{
+ export module 'accounts' {
+   export const socialLogin: Runner<{
       methodName: "accounts.socialLogin";
       settings: {
         oauth: true;
@@ -732,7 +734,7 @@ export declare module gigya {
       };
     }>;
 
-    const showScreenSet: Runner<{
+   export const showScreenSet: Runner<{
       methodName: "showScreenSet";
       settings: {
         useBasePlugin: true;
@@ -3888,4 +3890,4 @@ export declare module gigya {
 }
 
 
-export default gigya;
+

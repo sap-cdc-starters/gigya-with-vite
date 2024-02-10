@@ -1,17 +1,33 @@
 import { gigyaService } from '@gigya/service';
 import type { GigyaState } from '@gigya/service';
-
+ 
 export function setupGigyaProfileContainer(element: HTMLDivElement) {
-  gigyaService.subscribe(({ value, context: { account } }: GigyaState) => {
+  gigyaService.subscribe(({ value, context }: GigyaState) => {
+    console.log('profile container',value, context);
+    const  { account } = context || {};
     console.log(account);
     element.style.display = value == 'authenticated' ? 'inline' : 'none';
     element.innerHTML = claims({ account });
   });
 }
 
-function claims({ account }: { account: Record<string, object> }) {
+
+
+function flatten(claims: [string, any][]): [string, any][]{
+  return  claims.flatMap(([key, value]) => {
+    if (typeof value === 'object') {
+      return flatten(Object.entries(value).map(([k, v]) => [`${key}.${k}`, v]));
+    }
+    return [ [key, value]]
+  })
+}
+function claims({ account }: { account?: Record<string, object>  }) {
+  const profile = account?.profile as  any;
+  const { firstName, nickName, photoURL, email } = profile || {  };
   return ` 
-  <div>
+  <div> 
+    ${welcome({name:nickName ?? firstName ??email, picture: photoURL})} 
+
    <p class="row float-left"><b>Here is the info I recovered about your profile in your Gigya account:</b></p>
   <table id="token-table">
   <thead>
@@ -23,11 +39,11 @@ function claims({ account }: { account: Record<string, object> }) {
   <tbody>
     ${
       account &&
-      Object.keys(account)
+      flatten(Object.entries(account))
         .map(
-          (key) => `<tr>
+          ([key,value]) => `<tr>
     <td>${key}</td>
-    <td>${account[key]}</td>
+    <td>${value}</td>
   </tr>`
         )
         .join(' ')
@@ -39,8 +55,8 @@ function claims({ account }: { account: Record<string, object> }) {
 }
 
 
-
-function welcome({ profile: { name, picture } }) {
+//@ts-ignore
+function welcome(  { name, picture } ) {
   return `
   <div >
   <h1 class="float-left">Hello <b>${name}!</b>

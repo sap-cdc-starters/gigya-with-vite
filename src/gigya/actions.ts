@@ -1,7 +1,7 @@
 // @ts-nocheck
-  
-
-const gigyaWebSDK = ()=>window.gigya;
+//<reference types="gigya.d.ts" />
+ 
+const gigyaWebSDK = ()=>window.gigya as gigya;
 export interface SocialPayload {
     provider: string,
 
@@ -39,12 +39,38 @@ export async function performSignup(args: any) {
     });
 }
 
-export async function screenSetSignUp(args: any) {
+export async function screenSetSignUp(args: ScreenSetParams) {
     return new Promise((resolve, reject) => { 
         gigyaWebSDK().accounts.showScreenSet(
             {
                 screenSet: "Default-RegistrationLogin",
                 startScreen: 'gigya-register-screen',
+                onLogin: (r) => {
+                    resolve(r)
+                },
+                ...args,
+                callback: (response) => {
+                    if (response.errorCode === 0) {
+                        resolve(response);
+
+                    }
+                    if (response.errorCode !== 0) {
+                        reject(
+                            `Error during registration: ${response.errorMessage}, ${response.errorDetails}`
+                        );
+                    }
+                },
+            })
+
+    });
+}
+
+export async function screenSetLogin(args: ScreenSetParams) {
+    return new Promise((resolve, reject) => {
+        gigyaWebSDK().accounts.showScreenSet(
+            {
+                screenSet: "Default-RegistrationLogin",
+                startScreen: 'gigya-login-screen',
                 onLogin: (r) => {
                     resolve(r)
                 },
@@ -84,7 +110,7 @@ export async function initRegistration(args: any) {
     });
 }
 
-export async function performSignin(args) {
+export async function performSignin(args: {loginId,password, [key: string]: any}) {
     return new Promise((resolve, reject) => {
         const params = {
             loginID: args.email,
@@ -217,3 +243,41 @@ export const logout = (args: AnyRequest = {}) => {
     });
 }
 
+
+export function useGigya(listener: (gigya: gigya) => void) {
+    if (window.gigya && window.gigya.isReady) {
+        listener(window.gigya);
+    } else {
+        window.onGigyaServiceReady= () => listener(window.gigya);
+        // window.addEventListener('onGigyaServiceReady', () => {
+        //     listener(window.gigya);
+        // });
+    }
+}
+
+export function addEventHandlers ({onLogin, ...events}: Record<string, (e:any)=> void>) {
+    useGigya((gigya) => {
+        gigya.hasSession().then((hasSession) => {
+            if (hasSession) {
+                window.gigya.accounts.getAccountInfo({
+                    include: "all",
+                    callback: function (res) {
+                        console.log('getAccountInfo', res, onLogin);
+                        if (res.errorCode === 0) {
+                            onLogin && onLogin(res)
+                        }
+                    }
+                })
+            }
+        }) 
+        
+        gigya.accounts.addEventHandlers({
+                    onLogin: (e) => {
+                        console.log('onLogin', e);
+                        onLogin && onLogin(e)
+                    },
+                    ...events
+                });
+        }
+    )
+}

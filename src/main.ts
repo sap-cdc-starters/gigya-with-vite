@@ -1,14 +1,13 @@
 import './style.css';
 import typescriptLogo from './typescript.svg';
 import viteLogo from '/vite.svg';
-import {
-  setupProfileContainer,
-  setupGoogleLogin,
-  setupLoginContainer,
+import { 
   setupProperties,
-} from '@google';
+} from '@gigya/views/properties.ts';
 import { setupGigyaProfileContainer } from '@gigya';
 import { gigyaService, GigyaState } from '@gigya/service';
+import {setupLoginContainer} from "@auth/views/login.ts";
+import {setupJwtContainer} from "@gigya/views/jwt.ts";
 
 document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
   <div>
@@ -19,37 +18,40 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
     <a href="https://www.typescriptlang.org/" target="_blank">
       <img src="${typescriptLogo}" class="logo vanilla" alt="TypeScript logo" />
     </a>
-    <h1> Google One Tap</h1>
+    <h1>Gigya + Vite</h1>
      
     <div class="vcontainer container">
-    <section class="section container" id="not-authenticated"> </section>
+    <section class="section container" id="not-authenticated">
+       <button id="login-button" class="g_id_signin" style="display: inline;">Login</button>
+     </section>
 
-    <section class="section container" id="authenticated"> </section>
-    <section class="container" id="gigya-profile"></section>
-
-        <section class="section container" id="google-container"> </section>
-
+    <section class="section container" id="profile"> </section>
+    
+    <section class="container" id="jwt"></section> 
+        <section class="section container" id="google-container"> </section> 
         <section class="container" id="properties"></section>
 
     </div>
   </div>
   </div>
 `;
-setupGoogleLogin(document.querySelector<HTMLDivElement>('#google-setup')!);
 
 setupLoginContainer(
   document.querySelector<HTMLDivElement>('#not-authenticated')!
 );
 
-setupProfileContainer(
-  document.querySelector<HTMLDivElement>('#authenticated')!
+
+setupGigyaProfileContainer(
+  document.querySelector<HTMLDivElement>('#profile')!
 );
+setupJwtContainer(
+    document.querySelector<HTMLDivElement>('#jwt')!
+
+)
+
 
 setupProperties(document.querySelector<HTMLDivElement>('#properties')!);
-setupGigyaProfileContainer(
-  document.querySelector<HTMLDivElement>('#gigya-profile')!
-);
-
+ 
 gigyaService.subscribe((state: GigyaState) => {
   console.log(state);
 });

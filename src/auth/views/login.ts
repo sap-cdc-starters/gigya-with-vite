@@ -1,10 +1,11 @@
 import { googleService } from '@google/service';
 import {setupLoginButton} from "@gigya/views/login-button.ts";
+import {gigyaService} from "@gigya";
 
 export function setupLoginContainer(element: HTMLDivElement) {
-  googleService.subscribe((event: { value: string }) => {
+  gigyaService.subscribe((event) => {
     console.log(event);
-    element.style.display = event.value == 'authenticated' ? 'none' : 'inline';
+    element.style.display = event.matches('authenticated') ? 'none' : 'inline';
   });
 
   element.innerHTML = ` 
@@ -12,7 +13,8 @@ export function setupLoginContainer(element: HTMLDivElement) {
  
   <div id="link-login" class="centered">
     <button id="login-button" class="g_id_signin" style="display: inline;">Login</button> 
-  </div>`;
+  </div>
+`;
 
   setupLoginButton(
       document.querySelector<HTMLButtonElement>('#login-button')!

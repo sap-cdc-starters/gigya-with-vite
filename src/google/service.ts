@@ -14,7 +14,8 @@ const authMachine = createMachine(
       none: {
         on: { ID_TOKEN: { target: 'authenticated', actions: ['setIdToken'] } },
       },
-      authenticated: {},
+      authenticated: {
+      },
     },
   },
   {
