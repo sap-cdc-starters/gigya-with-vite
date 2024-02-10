@@ -273,6 +273,7 @@ export type TranslationWrapper = {
         conflictHandling?: ConflictHandling;
         providerSessionInfo?: IProviderSessionInfo;
         containerID?: string;
+        include?: string;
     };
     type IFormResponse = {
         response?: IFormResponse;

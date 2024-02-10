@@ -34,7 +34,7 @@ function flatten(claims: [string, any][]): [string, any][]{
 function claims({ claims }: Jwt) {
   return ` 
   <div>
-   <p class="row float-left"><b>Here is the clamis I recovered from ypur Jwt token:</b></p>
+   <p class="row float-left"><b>Here is your JWT token payload:</b></p>
   <table id="token-table">
   <thead>
     <tr>

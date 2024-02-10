@@ -1,3 +1,2 @@
-# Google-One-Tap-w-t-gigya-vite
+# Gigya + Vite + TS
 
-[Edit on StackBlitz ⚡️](https://stackblitz.com/edit/vitetsgoogleonetap-s2cpqv)# gigya-with-vite

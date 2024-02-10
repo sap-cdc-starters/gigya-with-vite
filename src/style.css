@@ -39,3 +39,56 @@
 .vcontainer {
   flex-direction: column;
 }
+
+.hcontainer{
+  flex-direction: row;
+  display: flex; 
+  justify-content: space-between;
+  
+ }
+
+.left {
+  margin-right: 20rem;
+  justify-content: left;
+  position: relative; 
+  
+   /*margin-outside: 20rem;*/
+  /*padding: 20rem;*/
+}
+ 
+
+
+#navbar {
+  font-size: 1.4rem;
+  position: fixed;
+  z-index: 1;  
+  top: 0; /* Stay at the top */
+  left: 0;
+  
+  width: 100%;
+  overflow-y: hidden; /* Disable horizontal scroll */
+  padding-left: 20px;
+}
+
+
+
+#navbar>* {
+  padding: 0 2rem 0 0
+} 
+@media(min-width: 60rem) {
+  #navbar {
+    max-width:100%
+  }
+
+  #navbar>* {
+    display: inline-block;
+    margin-left: 1.2rem;
+    padding: 0 1rem
+  }
+
+  #navbar:before {
+    display: inline-block
+  }
+
+  
+}

@@ -2,13 +2,19 @@ import { gigyaService } from '@gigya/service';
 import type { GigyaState } from '@gigya/service';
  
 export function setupGigyaProfileContainer(element: HTMLDivElement) {
-  gigyaService.subscribe(({ value, context }: GigyaState) => {
-    console.log('profile container',value, context);
-    const  { account } = context || {};
-    console.log(account);
-    element.style.display = value == 'authenticated' ? 'inline' : 'none';
-    element.innerHTML = claims({ account });
-  });
+  gigyaService.subscribe((state: GigyaState) => {
+    if (state.matches('authenticated')) {
+      const {account} = state.context || {};
+      const {firstName, nickName, photoURL, email} = account?.profile || {} ;
+        element.innerHTML = `
+            <div>
+                ${welcome({name: nickName ?? firstName ?? email, picture: photoURL})} 
+                ${claims({account})}
+            </div>`;
+    }
+    element.style.display = state.matches('authenticated') ? 'inline' : 'none';
+
+  })
 }
 
 
@@ -22,14 +28,11 @@ function flatten(claims: [string, any][]): [string, any][]{
   })
 }
 function claims({ account }: { account?: Record<string, object>  }) {
-  const profile = account?.profile as  any;
-  const { firstName, nickName, photoURL, email } = profile || {  };
   return ` 
-  <div> 
-    ${welcome({name:nickName ?? firstName ??email, picture: photoURL})} 
+  <div  > 
 
    <p class="row float-left"><b>Here is the info I recovered about your profile in your Gigya account:</b></p>
-  <table id="token-table">
+  <table id="token-table" >
   <thead>
     <tr>
       <th>Key</th>
@@ -59,8 +62,10 @@ function claims({ account }: { account?: Record<string, object>  }) {
 function welcome(  { name, picture } ) {
   return `
   <div >
-  <h1 class="float-left">Hello <b>${name}!</b>
-  <img src="${picture}" alt="Avatar" style="padding: 0 2rem 0 2rem; border-radius: 50%;"> </h1>
+  <h1 class="float-left">
+        Hello <b>${name}!</b>
+        ${picture? `<img src="${picture}" alt="Avatar" style="padding: 0 2rem 0 2rem; border-radius: 50%;" >`: ''} 
+  </h1>
   <h3 class="row float-left">Looks like you have authenticated yourself!</h3>
 <div>
   `;
