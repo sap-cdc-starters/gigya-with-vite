@@ -1,15 +1,15 @@
-import { gigyaService } from '@gigya/service';
+import {Account, gigyaService} from '@gigya/service';
 import type { GigyaState } from '@gigya/service';
  
 export function setupGigyaProfileContainer(element: HTMLDivElement) {
   gigyaService.subscribe((state: GigyaState) => {
     if (state.matches('authenticated')) {
-      const {account} = state.context || {};
+      const {account} = state.context || {} as Account;
       const {firstName, nickName, photoURL, email} = account?.profile || {} ;
         element.innerHTML = `
             <div>
                 ${welcome({name: nickName ?? firstName ?? email, picture: photoURL})} 
-                ${claims({account})}
+                ${claims(account)}
             </div>`;
     }
     element.style.display = state.matches('authenticated') ? 'inline' : 'none';
@@ -27,7 +27,7 @@ function flatten(claims: [string, any][]): [string, any][]{
     return [ [key, value]]
   })
 }
-function claims({ account }: { account?: Record<string, object>  }) {
+function claims(account: Account) {
   return ` 
   <div  > 
 
