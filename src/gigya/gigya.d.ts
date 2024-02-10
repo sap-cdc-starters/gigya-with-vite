@@ -1,2101 +1,3891 @@
-declare namespace gigya {
-  // region injected data
-  let apiKey: string;
-  let build: {
-    number: number;
-    version: string;
-  };
-  let configHostnameOverride: string;
-  let dataCenter: string;
-  let defaultApiDomain: string;
-  let env: string;
-  let gmidVersion: string;
-  let gaeDomain: string;
-  let partnerSettings: {
-    authMode: string;
-    baseDomain?: string;
-    baseDomains: string[];
-    captchaProvider: string;
-    cname?: string;
-    customAPIDomainPrefix?: string;
-    funCaptcha: {
-      siteKey: string;
-    };
-    globalConf?: string;
-    gmidTicketExpiration?: number;
-    invisibleRecaptcha: {
-      siteKey: string;
-    };
-    plugins: {
-      apiDomain: string;
-    };
-    recaptchaV2: {
-      siteKey: string;
-    };
-    recaptchaV3: {
-      siteKey: string;
-    };
-    recaptchaEnterprise: {
-      siteKey: string;
-    };
-    siteGroupGlobalConf?: string;
-    ssoKey?: string;
-    ssoLogoutUrl?: string;
-    ssoSegment?: string;
-  };
-  // endregion
+export declare module gigya {
 
-  // region properties
-  let abTesting: {
-    disabledPaths?: Array<string>;
-    enabledPaths?: Array<string>;
-    service?: string;
-    serviceParams?: Object;
+  declare type BaseApiJson = Pick<BaseApi, "methodName"> & Partial<BaseApi>;
+  declare type BaseApiList = ReadonlyArray<BaseApiJson>;
+  declare type APIServerBase = Pick<ServerApi, "schema" | "methodName"> & Partial<ServerApi> & BaseApiJson;
+  declare type APIUIBase = Pick<UiApi, "methodName"> & Partial<UiApi> & BaseApiJson;
+  export type ApiMap<TArray extends BaseApiList> = {
+    [E in TArray[number] as E["methodName"]]: Runner<E>;
   };
-  let accounts: {
-    auth: import('src/core/Gigya.Js/app/Authentication/AuthApis').IAuthApis & {
-      [key: string]: any;
-      fido: {
-        initRegisterCredentials: (params) => void;
-        registerCredentials: (params) => void;
-        getAssertionOptions: (params) => void;
-        verifyAssertion: (params) => void;
-        register: (params) => void;
-        login: (params) => void;
-        getCredentials: () => void;
-        removeCredential: (params) => void;
-      };
-    };
-    [key: string]: any;
+  export declare function runner<Api extends BaseApiJson>(args: Params<Api>): void;
+  export declare type Runner<Api extends BaseApiJson> = typeof runner<Api>;
+  export declare type Params<Api extends BaseApiJson> = Api extends APIServerBase ? ServerApiParams<Api> : Api extends APIUIBase ? UiApiParams<Api> : InferParams<Api>;
+  export declare type ServerApiParams<Api extends APIServerBase> = {
+    [Key in keyof Schema<Api['schema']>]?: any;
   };
-  let oauth: any;
-  let callback: any;
-  let comments: any;
-  let defaultEventMaps: any;
-  let errorReport: {
-    enabled: boolean;
-    probability: number;
+  type Schema<schema extends string> = Record<Split<schema, "|">[number], any>;
+  type Split<S extends string, D extends string> = string extends S ? string[] : S extends '' ? [
+  ] : S extends `${infer T}${D}${infer U}` ? [
+    T,
+    ...Split<U, D>
+  ] : [
+    S
+  ];
+  type plugins = {
+    ["showScreenSet"]: (params: IScreenSetParams) => void;
   };
-  let gcs: any;
-  let sso: any;
-  let global: any;
-  let globalAccount: {
-    dataCenter: string;
+  type Plugin<API extends APIUIBase> = API extends {
+    methodName: infer methodName;
+  } ? methodName extends keyof plugins ? plugins[methodName] : InferParams<API> : InferParams<API>;
+  export declare type UiApiParams<Api extends APIUIBase> = Plugin<Api>;
+  declare type InferParams<Api extends BaseApiJson> = Api['run'] extends (...args: infer Params) => any ? Params : [
+  ];
+  declare type Section<name extends string, section extends Record<string, any>, Map extends Record<string, any>> = {
+    [api in keyof section]: api extends string ? Map[Join<name, api>] : never;
   };
-  let gm: any;
-  let gmidTicketExpiration;
-  let gscounters: any;
-  let isGigya: boolean;
-  let isReady: boolean;
-  let XhrRequest: any;
-  let localInfo: {
-    androidVersion: number;
-    backCompat: boolean;
-    baseDomain: string;
-    currentBrowser: string;
-    initTime: Date;
-    iosVersion: number;
-    isAndroid: boolean;
-    isAndroidBrowser: boolean;
-    isBrowserSupportsFilesAPI: boolean;
-    isChrome: boolean;
-    isEdgeLegacy: boolean;
-    isEdge: boolean;
-    isFF: boolean;
-    isFacebookBrowser: boolean;
-    isGoogleBot: boolean;
-    isIE: boolean;
-    isIE10: boolean;
-    isIE11: boolean;
-    isIE6: boolean;
-    isIE7: boolean;
-    isIE8: boolean;
-    isIE9: boolean;
-    isIOS: boolean;
-    isIOSChrome: boolean;
-    isIOSWebView: boolean;
-    isMAC: boolean;
-    isMobile: boolean;
-    isMobileApp: boolean;
-    isNativeMobileApp: boolean;
-    isOnLine: boolean;
-    isOpera: boolean;
-    isSafari: boolean;
-    isSafari534: boolean;
-    isTouch: boolean;
-    isWeChat: boolean;
-    isWin: boolean;
-    isWindowsPhone: boolean;
-    messagingMethod: number;
-    pageDomain: string;
-    protocol: string;
-    quirksMode: boolean;
-    supportsFlash: boolean;
-    supportsLocalStorage: boolean;
-    supportsPostMessage: boolean;
-    supportsSessionStorage: boolean;
-    userAgent: string;
-    version: number;
+  declare type Join<T extends string, T1 extends string, Seperator extends string = "."> = `${T}${Seperator}${T1}`;
+  export declare type Gigya<gigya extends Record<string, Record<string, any>>, Map extends ApiMap<BaseApiList> = ApiMap<BaseApiList>> = {
+    [plugin in keyof gigya]: plugin extends string ? Section<plugin, gigya[plugin], Map> : never;
   };
-  let pluginTypes: {
-    comments: any;
+  /*
+    imported types
+    */
+  type ServerApi = BaseApi & {
+    schema: string;
+    requiresSession?: boolean;
+    settings: ServerApiSettings;
+    adapterSettings: ApiAdapterSettings;
+    altSessionParams?: string;
+    constructor(apiMethod: string, schema: string, requiresSession?: boolean, settings?: ServerApiSettings, adapterSettings?: ApiAdapterSettings, altSessionParams?: string);
+    run(params: Object, explicitParams: Object): void;
   };
-  let pluginUtils: any;
-  let providersConfig: {
-    facebook?: {
-      appID: string;
-      version: string;
-    };
-    googlePlus?: {
-      scopes: string;
-      clientId: string;
+  type ServerApiSettings = {
+    oauth?: boolean;
+    mode?: Mode;
+    restUrl?: string;
+    defaultParams?: Object;
+    forcePost?: boolean;
+    riskAssessment?: boolean;
+    disableCache?: boolean;
+    preprocessor?: (params: Object, callback: () => void) => void;
+    postprocessor?: (params: Object, response: Object) => void;
+  };
+  type Mode = {
+    silent: boolean;
+    warn: boolean;
+  };
+  type Object = {};
+  type ApiAdapterSettings = {
+    forceHttps?: boolean;
+    forcePost?: boolean;
+    forceGigyaDomain?: boolean;
+    disableCache?: boolean;
+    requiresSession?: () => boolean;
+    clearSession?: boolean;
+    clearSessionCondition?: (params: any) => boolean;
+    cacheTimeout?: number;
+    jsSdkRequestId?: string;
+    preprocessor?: (params: any, callback: () => void) => void;
+    oauthMode?: OAuthMode;
+    isXhrSupported?: boolean;
+    useHttpStatusCodes?: boolean;
+    namespace?: string;
+    useBearerToken?: boolean;
+  };
+  type OAuthMode = {};
+  type UiApi = BaseApi & {
+    methodName: string;
+    jsName: string;
+    settings: UiApiSettings;
+    injectionInfo;
+    pluginType;
+    namespace: string;
+    className: string;
+    instanceMethods;
+    constructor(methodName: string, jsName: string, defaultParams?: Object, defaultPopupParams?: Object, requiredParams?: string, settings?: UiApiSettings);
+    getApiName(jsName: string, methodName: string, settings?: UiApiSettings): string;
+    versionSelector(methodName: string, namespace: string, defaultVersion: string, versions: IPluginVersionInfo[], versionField?: string): VersionSelector;
+    createApi(methodName: string, namespace: string, className: string, jsName: string, settings?: UiApiSettings, instanceMethods?: string[]): UiApi;
+    addInstanceMethodsAliases(): void;
+    createInstanceMethodAlias(methodName: string): void;
+    getPublicMethod(methodName: string): IPublicMethod;
+    preprocessRequest(params: Object, callback: () => void): void;
+    run(params: Object, explicitParams: Object): void;
+    startUI;
+    startPlugin(params: Object, explicitParams: Object): void;
+    loadPluginJS;
+    wasPluginJSLoaded;
+    getPluginType;
+    setSourceData(params: Object): void;
+    validateRequiredParams(params: Object): boolean;
+    setDefaultParams(params: Object): void;
+    prepareParameters(params: Object): void;
+    legacyStartUI(params: Object, explicitParams: Object): void;
+    prepareContainer(params: Object, isPopup: boolean, callback: () => void): void;
+  };
+  type UiApiSettings = {
+    useBasePlugin?: boolean;
+    apiName?: string;
+    waitForAPIQueue?: boolean;
+    silentMode?: boolean;
+    useNewModal?: boolean;
+    requireSession?: boolean;
+    allowPopup?: boolean;
+    defaultParams?: Object;
+    defaultPopupParams?: Object;
+    requiredParams?: string;
+    dontLoadPluginsCore?: boolean;
+    ignoreContainerId?: boolean;
+    forcePost?: boolean;
+    riskAssessment?: boolean;
+    disableCache?: boolean;
+    preprocessor?: (params: Object, callback: () => void) => void;
+    postprocessor?: (params: Object, response: Object) => void;
+  };
+  type IPluginVersionInfo = {
+    versionName: string;
+    method: string | Function;
+    isSupported?: (params: {
+      directCall: boolean;
+    }) => boolean;
+    additionalParams?: {
+      [field: string]: any;
     };
   };
-  let samlConfig: gigya._.saml.ISamlConfig;
-  let setAccountResidency: (da: string) => void;
-  let socialize: any;
-  let thisScript: {
-    APIKey: string;
-    baseDomain: string;
-    globalConf: Object & {
-      toggles?: Object;
-      APIKey?: string;
-      defaultRegScreenSet?: string;
-      defaultMobileRegScreenSet?: string;
-    };
-    lang: Lang;
-    protocol: string;
-    scriptElement: HTMLScriptElement;
-    URLParams: Object;
+  type Function = {};
+  type VersionSelector = {};
+  type IPublicMethod = {
+    instanceMethod: string;
+    argNames: string[];
   };
-  // endregion
+  type BaseApi = {
+    methodName: string;
+    settings: ApiSettings;
+    constructor(methodName: string, settings: ApiSettings);
+    run(params: Object, explicitParams?: Object): void;
+    preprocessRequest(params: Object, callback: () => void): void;
+    addAlias(): void;
+  };
+  type ApiSettings = {
+    defaultParams?: Object;
+    forcePost?: boolean;
+    riskAssessment?: boolean;
+    disableCache?: boolean;
+    preprocessor?: (params: Object, callback: () => void) => void;
+    postprocessor?: (params: Object, response: Object) => void;
+  };
+  type IScreenSetParams = {
+    context?: any;
+    cid?: string;
+    onBeforeSubmit?: (e: any) => void;
+    onAfterSubmit?: (e: any) => void;
+    onSubmit?: (e: any) => void;
+    onAfterValidation?: (e: any) => void;
+    onBeforeValidation?: (e: any) => void;
+    onBeforeScreenLoad?: (e: any) => void;
+    onAfterScreenLoad?: (e: any) => void;
+    onFieldChanged?: (e: any) => void;
+    onHide?: (e: any) => void;
+    apiDomain?: string;
+    regSource?: string;
+    regToken?: string;
+    aToken?: string;
+    finalizeRegistration?: boolean;
+    passwordResetToken?: string;
+    mobileScreenSet?: string;
+    startScreen?: string;
+    initialResponse?: IFormResponse;
+    initialMethod?: string;
+    remember?: boolean;
+    allowAccountsLinking?: boolean;
+    rememberSessionExpiration?: any;
+    sessionExpiration?: any;
+    isChild?: boolean;
+    parentData?: ScreenSetData;
+    cssPrefix?: string;
+    ignoreApiQueue?: boolean;
+    parentTranslations?: object;
+    conflictHandling?: ConflictHandling;
+    providerSessionInfo?: IProviderSessionInfo;
+  };
+  type IFormResponse = {
+    response?: IFormResponse;
+    regToken?: string;
+    aToken?: string;
+    event?: any;
+    autoSkip?: boolean;
+    operation?: string;
+    profile?: IFormData;
+    data?: IFormData;
+    errorDetails?: string;
+    errorMessage?: string[];
+    customMessage?: string;
+    user?: string;
+    secretQuestion?: string;
+    errorDetailsCode?: number;
+    validationErrors?: IErrorInfo[];
+    errorFlags?: string;
+    loginID?: string;
+    childScreenSetCloseReason?: string;
+    providerSessionInfo?: IProviderSessionInfo;
+    gig_provider?: string;
+    errorCode?: GSErrors;
+  };
+  type IFormData = {
+    rememberMe?: boolean;
+  };
+  type IErrorInfo = {
+    fieldName?: string;
+    fieldArrayKeyValue?: string;
+    errorCode: GSErrors;
+    errorType?: ErrorType;
+    errorMessage?: string;
+    customMessage?: string;
+    errorFlags?: string;
+    handled?: boolean;
+    field?: IFormInput;
+    widget?: IFormWidget;
+    isWarn?: boolean;
+  };
+  type GSErrors = {};
+  type ErrorType = {};
+  type IFormInput = {
+    isCaptcha: boolean;
+    getValue(el?: HTMLElement, currentValue?: any): InputValueType;
+    getName(isNormalized: boolean, flatten?: boolean): string;
+    arrayKeyField: string;
+    arrayKeyValue: string;
+    getArrayRoot(flatten?: boolean): string;
+    fieldName: string;
+    normalizedFieldName: string;
+    displayName: string;
+    isInHiddenContainer(): boolean;
+    isHidden(): boolean;
+    required(): boolean;
+    disabled(): boolean;
+    allowEmpty(): boolean;
+    instanceElement: HTMLElement;
+    validate(callback: IValidationCallback, formData?: any): void;
+    validateAsync(formData?: any): Promise<IValidationInfo>;
+    addEventListener(eventName: string, handler: Function): any;
+    removeEventListener(eventName: string, handler: Function): any;
+    getValidityState(): ValidityStates;
+    setValidityState(validityState: ValidityStates): any;
+    addValidityStateListener(listener: IValidityStateListener): any;
+    removeValidityStateListener(listener: IValidityStateListener): any;
+    update(element?: HTMLElement, fieldName?: string, isDataField?: boolean): void;
+    evaluateConditionalAttributes(): void;
+    getMetadata(): {};
+    setValue(dataValue: string | boolean, setByScript: boolean): void;
+    runOnServerDone(callback: ServerDoneFieldCallback): void;
+    fieldNamespace: SchemaName;
+    fieldBaseName: string;
+  };
+  type HTMLElement = {};
+  type InputValueType = {};
+  type IValidationCallback = {};
+  type ValidityStates = {};
+  type IValidityStateListener = {};
+  type ServerDoneFieldCallback = {};
+  type SchemaName = {
+    at(index: number): T | undefined;
+  };
+  type T = {};
+  type IFormWidget = {
+    _form: BaseForm;
+    getFieldsNames(): string[];
+    update(): void;
+    validateAsync(formData: any): Promise<IValidationInfo>;
+    _screen: Screen;
+    linkInstanceElement(parent: HTMLElement): any;
+    unlinkInstanceElement(): any;
+    _parent: ITemplateElementParent;
+    unlinkTemplate(): any;
+    evaluateExpression(conditionalExpression: IConditionalExpression): any;
+    evaluateConditionalAttributes(): any;
+    resetLastConditionalValues(): any;
+    _screenSet: ScreenSetPlugin;
+    warn?(msg: string, id?: string): void;
+  };
+  type BaseForm = {
+    get dataProvider(): IFormDataProvider;
+    get submitButtonClicked(): boolean;
+  };
+  type IFormDataProvider = {
+    defaultSubmitParams: object;
+    hasProviderSessionInfo: boolean;
+    includeParams: string;
+    lang: string;
+  };
+  type IValidationInfo = {
+    errorCode: GSErrors;
+    field?: IFormInput;
+    widget?: IFormWidget;
+    errorType?: ErrorType;
+    setByScript?: boolean;
+    errorMessage?: string;
+    isWarning?: boolean;
+  };
+  type Screen = {
+    get variantGroupId(): string;
+    get abTestId(): string;
+    get abTestingData(): IAbTestingData;
+    get variantPercentage(): number | undefined;
+    get isOriginalVariant(): boolean;
+    get isScreenVariant(): boolean;
+    get requestedScreen(): string;
+  };
+  type IAbTestingData = {
+    testId: string;
+    variantId: string;
+    requestedScreenId: string;
+  };
+  type ITemplateElementParent = {
+    _screenSet: ScreenSetPlugin;
+    warn?(msg: string, id?: string): void;
+  };
+  type ScreenSetPlugin = {
+    get providerSessionInfo(): IProviderSessionInfo;
+    get regToken(): string;
+    get hasProviderSessionInfo(): boolean;
+  };
+  type IProviderSessionInfo = {
+    access_token?: string;
+    provider?: string;
+    provider_uid?: string;
+    idToken?: string;
+    code?: string;
+    lastName?: string;
+    firstName?: string;
+  };
+  type IConditionalExpression = {
+    condition: string;
+    defaultValue?: any;
+    ignoreError?: boolean;
+  };
+  type ScreenSetData = {};
+  type ConflictHandling = {};
 
-  // region constants
-  const i18n: Object;
-  const logger: ILogger;
-
-  // endregion
-
-  // region enums
-  enum LogLevel {
-    disabled = 0,
-    debug = 1,
-    info = 2,
-    warn = 3,
-    error = 4,
-  }
-
-  const enum ClientMuteLevel {
-    none = 0,
-    normal = 1,
-    all = 2,
-  }
-
-  const enum LogTheme {
-    // noinspection JSUnusedGlobalSymbols
-    none = 0,
-    dark = 1,
-    light = 2,
-  }
-
-  const enum GSErrors {
-    // noinspection JSUnusedGlobalSymbols
-    OK = 0,
-    Data_Pending = 100001,
-    NETWORK_ERROR = 500026,
-    DATA_PENDING = 100001,
-    OPERATION_CANCELED = 200001,
-    PERMISSION_GRANTED = 200002,
-    PERMISSION_NOT_GRANTED = 200003,
-    REDIRECT = 200004,
-    NEW_USER = 200005,
-    OPERATION_DONE = 200006,
-    UPDATE_USER = 200007,
-    OK_WITH_ERRORS = 200008,
-    ACCOUNTS_LINKED = 200009,
-    OK_WITH_ERROR_LOGIN_IDENTIFIER_EXISTS = 200010,
-    ACCOUNT_PENDING_REGISTRATION = 206001,
-    ACCOUNT_PENDING_VERIFICATION = 206002,
-    ACCOUNT_MISSING_LOGINID = 206003,
-    IDENTITY_ALREADY_ASSIGNED = 206004,
-    AFTER_EMAIL_VERIFICATION = 206005,
-    PENDING_CODE_VERIFICATION = 206006,
-    CLIENT_LOG = 300001,
-    INVALID_DATA_CENTER = 301001,
-    INVALID_REQUEST_FORMAT = 400001,
-    MISSING_REQUIRED_PARAMETER = 400002,
-    UNIQUE_IDENTIFIER_EXISTS = 400003,
-    INVALID_PARAMETER_FORMAT = 400004,
-    INVALID_PARAMETER_VALUE = 400006,
-    DUPLICATE_VALUE = 400007,
-    INVALID_AUTHENTICATION_HEADER = 400008,
-    VALIDATION_ERROR = 400009,
-    INVALID_REDIRECT_URI = 400011,
-    INVALID_RESPONSE_TYPE = 400012,
-    UNSUPPORTED_GRANT_TYPE = 400013,
-    INVALID_GRANT = 400014,
-    CODE_EXPIRED = 400015,
-    SCHEMA_VALIDATION_FAILED = 400020,
-    CAPTCHA_VERIFICATION_FAILED = 400021,
-    UNIQUE_INDEX_VALIDATION_ERROR = 400022,
-    INVALID_TYPE_VALIDATION_ERROR = 400023,
-    DYNAMIC_FIELDS_VALIDATION_ERROR = 400024,
-    WRITE_ACCESS_VALIDATION_ERROR = 400025,
-    INVALID_FORMAT_VALIDATION_ERROR = 400026,
-    REQUIRED_VALUE_VALIDATION_ERROR = 400027,
-    EMAIL_NOT_VERIFIED = 400028,
-    SCHEMA_CONFLICT_ERROR = 400029,
-    OPERATION_NOT_ALLOWED = 400030,
-    SECURITY_VERIFICATION_FAILED = 400050,
-    INVALID_APIKEY_PARAMETER = 400093,
-    NOT_SUPPORTED = 400096,
-    UNSUPPORTED_USER_AGENT = 400097,
-    NO_PROVIDERS = 400100,
-    POPUP_BLOCKED = 400101,
-    INVALID_EVENT_HANDLER = 400102,
-    INVALID_CONTAINERID = 400103,
-    NOT_CONNECTED = 400106,
-    INVALID_SITE_DOMAIN = 400120,
-    PROVIDER_CONFIGURATION_ERROR = 400122,
-    LIMIT_REACHED = 400124,
-    FREQUENCY_LIMIT_REACHED = 400125,
-    INVALID_ACTION = 400126,
-    INSUFFICIENT_POINTS_TO_REDEEM = 400127,
-    SIGNATURE_TIMESTAMP_EXPIRED = 400128,
-    INVALID_POLICY_CONFIGURATION = 401000,
-    SUSPECTED_SPAM = 401010,
-    LOGIN_FAILED_CAPTCHA_REQUIRED = 401020,
-    LOGIN_FAILED_WRONG_CAPTCHA = 401021,
-    OLD_PASSWORD_USED = 401030,
-    FORBIDDEN = 403000,
-    INVALID_SESSION_TOKEN = 403001,
-    REQUEST_HAS_EXPIRED = 403002,
-    INVALID_REQUEST_SIGNATURE = 403003,
-    DUPLICATE_NONCE = 403004,
-    UNAUTHORIZED_USER = 403005,
-    SENSITIVE_DATA_SENT_OVER_HTTP = 403006,
-    PERMISSION_DENIED = 403007,
-    INVALID_OPENID_URL = 403008,
-    PROVIDER_SESSION_EXPIRED = 403009,
-    INVALID_SECRET = 403010,
-    SESSION_HAS_EXPIRED = 403011,
-    NO_VALID_SESSION = 403012,
-    UNVERIFIED_USER = 403013,
-    MISSING_REQUEST_REFERRER = 403015,
-    UNEXPECTED_PROVIDER_USER = 403017,
-    PERMISSION_NOT_REQUESTED = 403022,
-    NO_USER_PERMISSION = 403023,
-    PROVIDER_LIMIT_REACHED = 403024,
-    INVALID_TOKEN = 403025,
-    UNAUTHORIZED_ACCESS_ERROR = 403026,
-    DIFFERENT_USER_FOR_REAUTH = 403027,
-    SESSION_EXPIRED_RETRY = 403030,
-    APPROVED_BY_MODERATOR = 403031,
-    TOKEN_HAS_RENEWED = 403032,
-    NO_USER_COOKIE = 403035,
-    UNAUTHORIZED_PARTNER = 403036,
-    POST_DENIED = 403037,
-    NO_LOGIN_TICKET = 403040,
-    ACCOUNT_DISABLED = 403041,
-    INVALID_LOGINID = 403042,
-    LOGIN_IDENTIFIER_EXISTS = 403043,
-    UNDERAGE_USER = 403044,
-    INVALID_SITE_CONFIGURATION_ERROR = 403045,
-    LOGINID_DOES_NOT_EXIST = 403047,
-    API_RATE_LIMIT_EXCEEDED = 403048,
-    PENDING_PASSWORD_CHANGE = 403100,
-    ACCOUNT_PENDING_TFA_VERIFICATION = 403101,
-    ACCOUNT_PENDING_TFA_REGISTRATION = 403102,
-    ACCOUNT_PENDING_RECENT_LOGIN = 403110,
-    ACCOUNT_TEMPORARILY_LOCKED_OUT = 403120,
-    REDUNDANT_OPERATION = 403200,
-    INVALID_APPLICATION_ID = 403201,
-    NOT_FOUND = 404000,
-    FRIEND_NOT_FOUND = 404001,
-    CATEGORY_NOT_FOUND = 404002,
-    UID_NOT_FOUND = 404003,
-    RESOURCE_NOT_FOUND = 404004,
-    INVALID_API_METHOD = 405001,
-    IDENTITY_EXISTS = 409001,
-    GONE = 410000,
-    REQUEST_ENTITY_TOO_LARGE = 413001,
-    COMMENT_TEXT_TOO_LARGE = 413002,
-    OBJECT_TOO_LARGE = 413003,
-    PROFILE_PHOTO_TOO_LARGE = 413004,
-    REQUEST_URI_TOO_LONG = 414000,
-    MISSING_USER_PHOTO = 409010,
-    COUNTER_NOT_REGISTERED = 409011,
-    INVALID_GMID_TICKET = 409012,
-    SAML_MAPPED_ATTRIBUTE_NOT_FOUND = 409013,
-    SAML_CERTIFICATE_NOT_FOUND = 409014,
-    SAML_MESSAGE_NOT_FOUND = 409015,
-    GENERAL_SERVER_ERROR = 500001,
-    SERVER_LOGIN_ERROR = 500002,
-    DEFAULT_APPLICATION_CONFIGURATION_ERROR = 500003,
-    SESSION_MIGRATION_ERROR = 500014,
-    PROVIDER_ERROR = 500023,
-    DATABASE_ERROR = 500028,
-    USERNAME_REQUIRED = 500029,
-    NO_PROVIDER_APPLICATION = 500031,
-    LOAD_FAILED = 500032,
-    INVALID_ENVIRONMENT_CONFIG = 500033,
-    ERROR_DURING_BACKEND_OPERATION = 500034,
-    TIMEOUT = 504001,
-    CLIENTTIMEOUT = 504002,
-    INVALID_URL = 404004,
-    MEDIA_ITEMS_NOT_SUPPORTED = 401001,
-    MISSING_ERROR_CODE = 599999,
-    THIS_AUTHENTICATION_METHOD_IS_CURRENTLY_DISABLED = 403300,
-    FORCE_LINK_LOGIN_IDENTIFIER_EXISTS = 409003,
-  }
-
-  // endregion
-
-  // region interfaces
-  interface GigGlobal {
-    addEventListener?: any;
-    console: Console;
-    Proxy?: any;
-    top?: any;
-  }
-
-  interface IDisposable {
-    dispose: () => void;
-    onDisposedEvent?: () => _.EventWrapper<() => void>;
-  }
-
-  interface IElementActualSize {
-    height: number;
-    width: number;
-  }
-
-  interface IElementSize {
-    height?: string;
-    minHeight?: string;
-    minWidth?: string;
-    width?: string;
-  }
-
-  interface IGroupCloser {
-    end(): void;
-
-    endWhen(doneWhen: Promise<any> | (() => void | Promise<any>)): void;
-  }
-
-  interface ILogger {
-    configKey: string;
-    isEnabled: boolean;
-
-    debug(message: string, details?: { [key: string]: any }): void;
-
-    disable(): void;
-
-    enable(
-      logLevel?: LogLevel,
-      clientMuteLevel?: ClientMuteLevel,
-      logTheme?: LogTheme
-    ): void;
-
-    error(
-      message: string,
-      details?: {
-        [key: string]: any;
-      }
-    ): void;
-
-    getConfig(): ILoggerConfig;
-
-    group(groupTitle: string, collapsed?: boolean): IGroupCloser;
-
-    groupEnd(groupTitle: string): void;
-
-    info(message: string, details?: { [key: string]: any }): void;
-
-    report(
-      message: string,
-      details?: { [key: string]: any },
-      includeStack?: boolean,
-      forceReport?: boolean
-    ): void;
-
-    warn(message: string, details?: { [key: string]: any }): void;
-  }
-
-  interface ILoggerConfig {
-    clientMuteLevel: ClientMuteLevel;
-    logLevel: LogLevel;
-    logTheme: LogTheme;
-  }
-
-  interface IViewportSize extends IElementActualSize {
-    orientation: number;
-  }
-
-  interface Lang {
-    countryCode: string;
-    full: string;
-    langCode: string;
-    originalLang: string;
-  }
-
-  interface IEventData {
-    workflowDefinitionId: string;
-    eventName: string;
-    data?: any;
-  }
-  // endregion
-
-  // region types
-  type ILogFunc = (
-    message: string,
-    details?: {
-      [key: string]: any;
-    }
-  ) => void;
-  // endregion
-
-  // region functions
-  function loggerJsonp(endpoint: string, params: string): void;
-
-  function setSSOToken(params: { redirectURL: string }): Promise<void>;
-
-  function bootstrap(): void;
-
-  function getUrlParam(param: string);
-
-  function getLoginToken();
-
-  function updateConfiguration(config: Object);
-
-  function hasSession(): Promise<boolean>;
-
-  function flow(flowID: string): Flow;
-  // endregion
-
-  // region classes
-  abstract class BaseLogger implements ILogger {
-    readonly configKey: string;
-
-    protected constructor(_global: GigGlobal);
-
-    abstract report(
-      message: string,
-      details?: {
-        [key: string]: any;
-      }
-    ): any;
-
-    getConfig(): ILoggerConfig;
-
-    readonly isEnabled: boolean;
-    private readonly logLevel;
-
-    private log(severity);
-
-    readonly debug: ILogFunc;
-    readonly info: ILogFunc;
-    readonly warn: ILogFunc;
-    readonly error: ILogFunc;
-
-    group(groupTitle: string, collapsed?: boolean): IGroupCloser;
-
-    groupEnd(groupTitle: string): void;
-
-    enable(
-      logLevel?: LogLevel,
-      clientMuteLevel?: ClientMuteLevel,
-      logTheme?: LogTheme
-    ): void;
-
-    disable(): void;
-  }
-
-  class IFrameLogger extends BaseLogger {
-    constructor(_global?: GigGlobal);
-
-    report(
-      message: string,
-      details: {
-        [key: string]: any;
-      }
-    ): void;
-  }
-
-  class ParentLogger extends BaseLogger {
-    private _random;
-
-    constructor(
-      _global?: GigGlobal,
-      _errorReportConfig?: {
-        enabled: boolean;
-        probability: number;
-      },
-      _canaryConfig?: {
-        isActive: boolean;
-      },
-      _random?: () => number,
-      _jsonp?: typeof loggerJsonp
-    );
-
-    report(
-      message: string,
-      details: {
-        [key: string]: any;
-      }
-    ): void;
-  }
-
-  class Flow {
-    public execute(): void;
-    public error(handler: (error: any) => Promise<void> | void): Flow;
-    public on(eventName: string, handler: (eventData: IEventData) => void);
-  }
-  // endregion
-
-  // region namespaces
-  namespace _ {
-    // region properties
-    let apiAdapter: apiAdapters.IApiAdapter;
-    let arApiList: (ServerApi | UiApi | api.VersionSelector)[];
-    let autoLoginInProgress: boolean;
-    let config: IWebSdkConfig;
-    let getApiDomain: (namespace?: string) => string;
-    let history: any;
-    let isTrustedDomain: boolean;
-    let logoutBehaviour: {
-      alwaysSendLogoutToServer: boolean;
-      logoutBeforeServerResponse: boolean;
-    };
-    let logoutMethods: {
-      'accounts.logout': number;
-      'socialize.deleteAccount': number;
-      'socialize.logout': number;
-      'socialize.unlinkAccounts': number;
-    };
-    let passkeyService: {
-      register: Function;
-      waitForService: Function;
-      authenticate: Function;
-      isSupported: Function;
-      removePasskey: Function;
-      on: Function;
-      remove: Function;
-    };
-    let Poller: any;
-    // endregion
-
-    // region constants
-    const BaseObject: any;
-    const bookmarkSize: {
-      digg: {
-        h: number;
-        w: number;
+  module socialize {
+    const login: Runner<{
+      methodName: "socialize.login";
+      settings: {
+        oauth: true;
+        preprocessor: any;
       };
-      facebook: {
-        h: number;
-        w: number;
+      schema: "ctag|temporary_account|authFlow|connectWithoutLogin|provider|redirectMethod|redirect_uri|pendingRegistration|lang|regSource|extraPermissions|sessionExpiration|forceAuthentication|includeiRank|includeAllIdentities|extraFields|enabledProviders|disabledProviders|signIDs|openIDUsername|openIDURL|openIDProviderLogo|openIDProviderName|finalizeRegistration|include|actionAttributes|profileAttributes|googlePlayAppID|bp_channel_url|loginIfExists|includeUserInfo|redirectURL|authCodeOnly|enablePopupLocation|invite|regToken|loginMode|apiDomain|conflictHandling|forcePermissions|signKeys|dataCenter|forceAuthentication";
+      requiresSession: false;
+      adapterSettings: {
+        clearSessionCondition: any;
+        forceHttps: true;
+        requiresSession: any;
       };
-      googlebookmarks: {
-        h: number;
-        w: number;
+      altSessionParams: undefined;
+    }>;
+
+    const addConnection: Runner<{
+      methodName: "socialize.addConnection";
+      settings: {
+        oauth: true;
       };
-      googleplus: {
-        h: number;
-        w: number;
+      schema: "ctag|temporary_account|authFlow|connectWithoutLogin|provider|redirectMethod|redirect_uri|pendingRegistration|lang|regSource|extraPermissions|sessionExpiration|forceAuthentication|includeiRank|includeAllIdentities|extraFields|enabledProviders|disabledProviders|signIDs|openIDUsername|openIDURL|openIDProviderLogo|openIDProviderName|finalizeRegistration|include|actionAttributes|profileAttributes|googlePlayAppID|bp_channel_url|loginIfExists|includeUserInfo|redirectURL|authCodeOnly|enablePopupLocation|invite|regToken|loginMode|apiDomain|conflictHandling|forcePermissions|signKeys|dataCenter|forceAuthentication";
+      requiresSession: false;
+      adapterSettings: {
+        forceHttps: true;
+        requiresSession: any;
       };
-      linkedin: {
-        h: number;
-        w: number;
+      altSessionParams: undefined;
+    }>;
+
+    const requestPermissions: Runner<{
+      methodName: "socialize.requestPermissions";
+      settings: {
+        oauth: true;
+        defaultParams: {
+          forcePermissions: true;
+        };
       };
-      messenger: {
-        h: number;
-        w: number;
+      schema: "ctag|temporary_account|authFlow|connectWithoutLogin|provider|redirectMethod|redirect_uri|pendingRegistration|lang|regSource|extraPermissions|sessionExpiration|forceAuthentication|includeiRank|includeAllIdentities|extraFields|enabledProviders|disabledProviders|signIDs|openIDUsername|openIDURL|openIDProviderLogo|openIDProviderName|finalizeRegistration|include|actionAttributes|profileAttributes|googlePlayAppID|bp_channel_url|loginIfExists|includeUserInfo|redirectURL|authCodeOnly|enablePopupLocation|invite|regToken|loginMode|apiDomain|conflictHandling|forcePermissions|signKeys|dataCenter|forceAuthentication";
+      requiresSession: true;
+      adapterSettings: {
+        forceHttps: true;
+        requiresSession: any;
       };
-      mixi: {
-        h: number;
-        w: number;
+      altSessionParams: undefined;
+    }>;
+
+    const showLoginUI_v2: Runner<{
+      methodName: "showLoginUI_v2";
+      settings: {
+        useBasePlugin: true;
+        defaultParams: {
+        };
+        defaultPopupParams: {
+        };
+        requiredParams: "";
       };
-      twitter: {
-        h: number;
-        w: number;
+      jsName: "socialize.plugins.login_v2";
+      namespace: "socialize";
+      className: "login_v2.LoginPlugin";
+      instanceMethods: {
       };
-      yahoobookmarks: {
-        h: number;
-        w: number;
+    }>;
+
+    const showAddConnectionsUI_v2: Runner<{
+      methodName: "showAddConnectionsUI_v2";
+      settings: {
+        useBasePlugin: true;
+        defaultParams: {
+        };
+        defaultPopupParams: {
+        };
+        requiredParams: "";
       };
-    };
-    const CDN_HOSTS: {
-      http: string[];
-      https: string[];
-    };
-    // endregion
-
-    // region classes
-    abstract class BaseApi {
-      methodName: string;
-      settings: ApiSettings;
-
-      constructor(methodName: string, settings: ApiSettings);
-
-      abstract run(params: Object, explicitParams: Object): void;
-    }
-
-    class EventWrapper<T extends Function> {
-      private _handlers;
-
-      constructor(_handlers?: Array<T>);
-
-      add(handler: T): void;
-
-      remove(handler: T): void;
-    }
-
-    class ServerApi extends BaseApi {
-      schema: string;
-
-      settings: ServerApiSettings;
-
-      constructor(
-        apiMethod: string,
-        schema: string,
-        requiresSession?: boolean,
-        settings?: ServerApiSettings,
-        adapterSettings?: apiAdapters.ApiAdapterSettings,
-        altSessionParams?: string
-      );
-
-      run(params: Object, explicitParams?: Object): void;
-    }
-
-    class ServerApiRequest {
-      api: ServerApi;
-      params: Object;
-
-      private callback;
-
-      constructor(api: ServerApi, params: Object);
-
-      start(): void;
-
-      private sendRequest(validSession);
-
-      private beforeRequest(validSession, callback);
-    }
-
-    class UiApi extends BaseApi implements IUiApiInfo {
-      methodName: string;
-      jsName: string;
-      settings: UiApiSettings;
-      private injectionInfo;
-
-      namespace: string;
-      className: string;
-
-      constructor(
-        methodName: string,
-        jsName: string,
-        defaultParams?: Object,
-        defaultPopupParams?: Object,
-        requiredParams?: string,
-        settings?: UiApiSettings
-      );
-
-      static getApiName(
-        jsName: string,
-        methodName: string,
-        settings?: UiApiSettings
-      ): string;
-
-      static versionSelector(
-        methodName: string,
-        namespace: string,
-        defaultVersion: string,
-        versions: IPluginVersionInfo[],
-        versionField?: string
-      ): api.VersionSelector;
-
-      static createApi(
-        methodName: string,
-        namespace: string,
-        className: string,
-        jsName: string,
-        settings?: UiApiSettings,
-        instanceMethods?: string[]
-      ): UiApi;
-
-      preprocessRequest(params: Object, callback: () => void): void;
-
-      run(params: Object, explicitParams: Object): void;
-    }
-
-    class Uri {
-      constructor(url: string, isAbsolute?: boolean);
-
-      readonly domain: string;
-      readonly path: string;
-      readonly search: string;
-      readonly hash: string;
-      readonly href: string;
-
-      toString(): string;
-
-      isBaseOf(url: string): boolean;
-
-      isIn(base: Uri): boolean;
-
-      isForSubDomains(): boolean;
-
-      isSubDomainOf(base: Uri): boolean;
-
-      static parse(url: string, isAbsolute?: boolean): Uri;
-      public addToSearch(params: Object): this;
-    }
-
-    class WindowProvider {
-      static navigator(): Navigator;
-      static document(): Document;
-      static screen(): Screen;
-    }
-    // endregion
-
-    // region functions
-    function addUserInfoToEvent(
-      response: Object,
-      targetObject: Object,
-      addLoginProperties?: boolean,
-      useBasePhotoURL?: string
-    ): Object;
-
-    function apiDomainFactory(
-      apiDomain?: string,
-      defaultApiDomain?: string
-    ): (namespace?: string) => string;
-
-    function convertIdentitiesArrayToObject(o: any): void;
-
-    function getBaseDomain(
-      baseDomains?: string[],
-      currentDomain?: string,
-      defaultDomains?: string[]
-    ): string;
-
-    function getCdnResource(path?: string): string;
-
-    function getGigyaDomain(
-      namespace?: string,
-      dataCenter?: string,
-      defaultDomain?: string
-    ): string;
-
-    function getImgCdnResource(): string;
-
-    function resolveApiDomain(
-      customApiDomainPrefix?: string,
-      baseDomain?: string,
-      dataCenter?: string,
-      defaultApiDomain?: string
-    ): string;
-
-    function sendEmailNative(params: Object): void;
-
-    function getSdkConfig(
-      domain?: string,
-      retries?: number
-    ): Promise<IWebSdkConfig>;
-    // endregion
-
-    // region interfaces
-    type ToggleValue = 'on' | 'off' | 'logOnly';
-
-    interface IWebSdkConfig {
-      flags: { [key: string]: boolean };
-      plugins: IWebSdkConfigPlugin;
-      api?: IApiServiceConfig;
-      sso?: ISsoConfig;
-      hostedPagesDomain?: string;
-      toggles?: {
-        linkAccountV2?: ToggleValue;
-        httpStatusCodes?: ToggleValue;
+      jsName: "socialize.plugins.login_v2";
+      namespace: "socialize";
+      className: "login_v2.LoginPlugin";
+      instanceMethods: {
       };
-      consent: {
-        hasLicense: boolean;
-        isMigrated?: boolean;
+    }>;
+
+    const showEditConnectionsUI: Runner<{
+      methodName: "showEditConnectionsUI";
+      settings: {
+        useBasePlugin: true;
+        defaultParams: {
+        };
+        defaultPopupParams: {
+        };
+        requiredParams: "";
       };
-    }
-    interface IWebSdkConfigPlugin {
-      connectWithoutLoginBehavior?: string;
-      defaultRegScreenSet?: string;
-      defaultMobileRegScreenSet?: string;
-      sessionExpiration?: number;
-      rememberSessionExpiration?: number;
-      apiDomain?: string;
-    }
-
-    interface IApiServiceConfig {
-      baseDomains: string[];
-      ssoKey?: string;
-      customAPIDomainPrefix?: string;
-      gmidTicketExpiration: number;
-    }
-
-    interface ISsoConfig {
-      validDomains: string[];
-      logoutURLs: { [apiKey: string]: string };
-      canaryCookiesNames?: ICanaryCookies;
-    }
-
-    interface ICanaryCookies {
-      isCanary: string;
-      version: string;
-    }
-
-    interface ApiSettings {
-      defaultParams?: Object;
-      forcePost?: boolean;
-      disableCache?: boolean;
-      preprocessor?: (params: Object, callback: () => void) => void;
-      postprocessor?: (params: Object, response: Object) => void;
-    }
-
-    interface IBaseObjectParam {
-      onError?: (e) => void;
-    }
-
-    interface IInjectionInfo {
-      name: string;
-      namespace: string;
-      methodName: string;
-      jsName: string;
-      instanceMethods?: any;
-      publicMethods?: {
-        [publicMethodName: string]: IPublicMethod;
+      jsName: "socialize.plugins.edit";
+      namespace: "socialize";
+      className: "editConnections.EditConnectionPlugin";
+      instanceMethods: {
       };
-    }
+    }>;
 
-    interface IPlugin extends IDisposable {
-      containerID: string;
-      start: () => void;
-      params: IBaseObjectParam;
-    }
-
-    interface IPublicMethod {
-      instanceMethod: string;
-      argNames: string[];
-    }
-
-    interface IPluginVersionInfo {
-      versionName: string;
-      method: string | Function;
-      isSupported?: (params: { directCall: boolean }) => boolean;
-      additionalParams?: {
-        [field: string]: any;
+    const getAvailableProviders: Runner<{
+      methodName: "socialize.getAvailableProviders";
+      settings: {
       };
-    }
-
-    interface IUiApiInfo {
-      namespace: string;
-      methodName: string;
-    }
-
-    interface ServerApiSettings extends ApiSettings {
-      oauth?: boolean;
-    }
-
-    interface UiApiSettings extends ApiSettings {
-      useBasePlugin?: boolean;
-      apiName?: string;
-      waitForAPIQueue?: boolean;
-      useNewModal?: boolean;
-      requireSession?: boolean;
-      allowPopup?: boolean;
-      defaultParams?: Object;
-      defaultPopupParams?: Object;
-      requiredParams?: string;
-      dontLoadPluginsCore?: boolean;
-      ignoreContainerId?: boolean;
-    }
-
-    // endregion
-
-    // region enums
-    enum DeviceTypes {
-      _undefined = 0,
-      desktop = 1,
-      mobile = 2,
-      auto = 3,
-    }
-
-    enum MessagingMethod {
-      // noinspection JSUnusedGlobalSymbols
-      LocalStorageListener = 0,
-      PostMessage = 1,
-    }
-
-    // endregion
-
-    // region namespaces
-    namespace api {
-      class VersionSelector {
-        methodName: string;
-
-        private _defaultVersionIndex;
-
-        constructor(
-          methodName: string,
-          _versions: IPluginVersionInfo[],
-          defaultVersionName: string
-        );
-
-        callVersion(
-          versionName: string,
-          params?: Object,
-          args?: Array<any>
-        ): void;
-
-        private findSupportedVersion(startIndex);
-
-        private findVersionIndexOrDefault(versionName);
-
-        private invokeVersionMethod(version, params?, args?);
-      }
-    }
-    namespace apiAdapters {
-      let web: any;
-
-      interface IApiAdapter {
-        init(callback: () => void, retries: number): Promise<void>;
-
-        getStorage(): gigya.utils.localStorage.AbstractLocalStorageAdapter;
-
-        isSessionValid(
-          params: Object,
-          callback: (isValid: boolean) => void
-        ): void;
-
-        sendRequest(
-          methodName: string,
-          params: Object,
-          callback?: (response: Object) => void,
-          settings?: ApiAdapterSettings
-        ): void;
-
-        sendOauthRequest(
-          methodName: string,
-          params: Object,
-          callback?: (response: Object) => void,
-          settings?: ApiAdapterSettings
-        ): void;
-
-        getTokenParam(APIKey: string, paramName: string): string;
-
-        onPluginEvent(event: any): void;
-
-        setGltexpFromSSO(apiKey?: string): Promise<boolean>;
-
-        registerForNamespaceEvents(namespace: string): void;
-
-        onSDKEvent(eventObject: Object): void;
-
-        name: string;
-
-        clearSession(params: Object, callback?: (res?: any) => void): void;
-
-        onJSLog(logType: string, logInfo: string): void;
-
-        getGmidTicket(): Promise<string | undefined>;
-
-        syncSsoLogin(ssoLoginParams: Object): void;
-
-        getPreferredLoginMethod(): string;
-
-        setPreferredLoginMethod(value: string): void;
-      }
-
-      interface ApiAdapterSettings {
-        forceHttps?: boolean; // required for old mobile sdks
-        forcePost?: boolean;
-        forceGigyaDomain?: boolean;
-        disableCache?: boolean;
-        requiresSession?: () => boolean;
-        clearSession?: boolean;
-        clearSessionCondition?: (params: any) => boolean;
-        cacheTimeout?: number;
-        jsSdkRequestId?: string;
-        preprocessor?: (params, callback: () => void) => void;
-        oauthMode?: OAuthMode;
-      }
-
-      enum OAuthMode {
-        Social,
-        Sso,
-      }
-    }
-    namespace bootstrap {
-      let parseScriptRetries: number;
-
-      function init(): void;
-
-      function parseScriptElement(callback: () => void): void;
-    }
-    namespace plugins {
-      let LoadDimmer: any;
-      let cssFlags: any;
-      let resources: any;
-      let utils: any;
-      let BasePlugin: any;
-      let instances: {
-        [containerID: string]: IPlugin;
+      schema: "enabledProviders|disabledProviders|requiredCapabilities";
+      requiresSession: undefined;
+      adapterSettings: {
+        forceHttps: true;
+        requiresSession: any;
       };
-      let ScreenSet: any;
+      altSessionParams: undefined;
+    }>;
 
-      function removePluginInstance(
-        params: Object,
-        injectionInfo: IInjectionInfo
-      ): void;
-    }
-    namespace providers {
-      let arProviders: Provider[];
+    const notifyLogin: Runner<{
+      methodName: "socialize.notifyLogin";
+      settings: {
+      };
+      schema: "siteUID|UIDTimestamp|UIDSig|UIDNonce|provider|authToken|tokenSecret|regSource|tokenExpiration|sessionHandle|sessionHandleExpiration|userInfo|providerSessions|sessionExpiration|authCode|includeAllIdentitiesincludeiRank|group|settings|extraFields|signIDs|newUser|actionAttributes|profileAttributes|bp_channel_url|lang|signKeys";
+      requiresSession: false;
+      adapterSettings: {
+        clearSession: true;
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: undefined;
+    }>;
 
-      class Provider {
-        ID: number;
-        displayName: string;
-        width: number;
-        height: number;
+    const convertAction: Runner<{
+      methodName: "socialize.convertAction";
+      settings: {
+      };
+      schema: "userAction|[providerCapability=actions]UserAction|provider";
+      requiresSession: undefined;
+      adapterSettings: {
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: undefined;
+    }>;
 
-        name: string;
-        arDefaultCapabilities: string[];
+    const deleteAccount: Runner<{
+      methodName: "socialize.deleteAccount";
+      settings: {
+      };
+      schema: undefined;
+      requiresSession: true;
+      adapterSettings: {
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: undefined;
+    }>;
 
-        constructor(
-          ID: number,
-          displayName: string,
-          width: number,
-          height: number,
-          defaultCapabilities: string,
-          explicitOnly?: boolean,
-          aliases?: string
-        );
+    const delUserSettings: Runner<{
+      methodName: "socialize.delUserSettings";
+      settings: {
+      };
+      schema: "group|settings";
+      requiresSession: true;
+      adapterSettings: {
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: undefined;
+    }>;
 
-        toString(): string;
-      }
+    const getContacts: Runner<{
+      methodName: "socialize.getContacts";
+      settings: {
+      };
+      schema: "enabledProviders|disabledProviders";
+      requiresSession: true;
+      adapterSettings: {
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: undefined;
+    }>;
 
-      function getProviderByName(
-        provider: any,
-        providersEnum?: Provider[]
-      ): Provider;
+    const getRawData: Runner<{
+      methodName: "socialize.getRawData";
+      settings: {
+      };
+      schema: "provider|UID|fields|dataFormat|path";
+      requiresSession: true;
+      adapterSettings: {
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: undefined;
+    }>;
 
-      function hideProvidersByName(
-        providers: Provider[],
-        providersToHide?: string,
-        providersEnum?: Provider[]
-      ): Provider[];
+    const getSessionInfo: Runner<{
+      methodName: "socialize.getSessionInfo";
+      settings: {
+      };
+      schema: "provider|paddingMode|encrypt|signIDs|encryptAll";
+      requiresSession: true;
+      adapterSettings: {
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: undefined;
+    }>;
 
-      function getProvidersForRequiredCapabilities(
-        providers: any,
-        capabilities: any
-      ): any[];
+    const getUserInfo: Runner<{
+      methodName: "socialize.getUserInfo";
+      settings: {
+      };
+      schema: "enabledProviders|disabledProviders|signIDs|includeiRank|includeAllIdentities|extraFields|group|settings|includeOpenidUID|include";
+      requiresSession: true;
+      adapterSettings: {
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: undefined;
+    }>;
 
-      function getAllProviders(): Provider[];
+    const checkin: Runner<{
+      methodName: "socialize.checkin";
+      settings: {
+      };
+      schema: "enabledProviders|disabledProviders|placeID|comment|latitude|longitude|actionAttributes|profileAttributes";
+      requiresSession: true;
+      adapterSettings: {
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: undefined;
+    }>;
 
-      function getProvidersByName(
-        providers: string,
-        providersEnum?: Provider[]
-      ): any[];
-    }
-    namespace saml {
-      interface ISamlConfig {
-        errorPageURL?: string;
-        proxyPageURL: string;
-      }
-    }
-    namespace UI {
-      function attachPlugin(
-        pluginClass: any,
-        namespace: any,
-        pluginName: any,
-        publicMethodName: any
-      ): void;
-    }
-    // endregion
+    const logout: Runner<{
+      methodName: "socialize.logout";
+      settings: {
+        preprocessor: any;
+        disableCache: true;
+      };
+      schema: "signIDs|samlContext|sustainLogoutURLs";
+      requiresSession: true;
+      adapterSettings: {
+        requiresSession: any;
+        forceHttps: true;
+      };
+      altSessionParams: undefined;
+    }>;
+
+    const notifyRegistration: Runner<{
+      methodName: "socialize.notifyRegistration";
+      settings: {
+      };
+      schema: "siteUID|UIDTimestamp|UIDSig";
+      requiresSession: true;
+      adapterSettings: {
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: undefined;
+    }>;
+
+    const removeConnection: Runner<{
+      methodName: "socialize.removeConnection";
+      settings: {
+      };
+      schema: "provider|lastIdentityHandling|removeLoginID";
+      requiresSession: true;
+      adapterSettings: {
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: undefined;
+    }>;
+
+    const setUID: Runner<{
+      methodName: "socialize.setUID";
+      settings: {
+      };
+      schema: "siteUID|UIDTimestamp|UIDSig";
+      requiresSession: true;
+      adapterSettings: {
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: undefined;
+    }>;
+
+    const unlinkAccounts: Runner<{
+      methodName: "socialize.unlinkAccounts";
+      settings: {
+      };
+      schema: undefined;
+      requiresSession: true;
+      adapterSettings: {
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: undefined;
+    }>;
+
+    const facebookGraphOperation: Runner<{
+      methodName: "socialize.facebookGraphOperation";
+      settings: {
+      };
+      schema: "graphPath|graphParams|authRequired|method|authType";
+      requiresSession: undefined;
+      adapterSettings: {
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: undefined;
+    }>;
+
+    const notifySSOLogin: Runner<{
+      methodName: "socialize.notifySSOLogin";
+      settings: {
+      };
+      schema: "bp_channel_url";
+      requiresSession: undefined;
+      adapterSettings: {
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: undefined;
+    }>;
+
   }
-  namespace boot {
-    let ensureJsSdkLoaded: any;
-  }
-  namespace canary {
-    let isActive: boolean;
-    let isLoaded: boolean;
-    const config: CanaryConfig;
 
-    interface CanaryConfig {
-      probability: number;
-      version: string;
-      cookiesNames: {
-        isCanary: string;
-        version: string;
+  module 'accounts' {
+    const socialLogin: Runner<{
+      methodName: "accounts.socialLogin";
+      settings: {
+        oauth: true;
+        preprocessor: any;
       };
-    }
-  }
-  namespace events {
-    namespace global {
-      interface IEventObject {}
+      schema: "ctag|temporary_account|authFlow|connectWithoutLogin|provider|redirectMethod|redirect_uri|pendingRegistration|lang|regSource|extraPermissions|sessionExpiration|forceAuthentication|includeiRank|includeAllIdentities|extraFields|enabledProviders|disabledProviders|signIDs|openIDUsername|openIDURL|openIDProviderLogo|openIDProviderName|finalizeRegistration|include|actionAttributes|profileAttributes|googlePlayAppID|bp_channel_url|loginIfExists|includeUserInfo|redirectURL|authCodeOnly|enablePopupLocation|invite|regToken|loginMode|apiDomain|conflictHandling|forcePermissions|signKeys|dataCenter|forceAuthentication";
+      requiresSession: false;
+      adapterSettings: {
+        clearSessionCondition: any;
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: undefined;
+    }>;
 
-      interface IEventHandlerInfo {
-        handler: (e: IEventObject) => void;
-        type?: string;
-        context?: Object;
-        params?: Object;
-        fullEventName?: string;
-      }
+    const showMyPhotoUI: Runner<{
+      methodName: "showMyPhotoUI";
+      settings: {
+        useBasePlugin: true;
+        defaultParams: {
+        };
+        defaultPopupParams: {
+        };
+        requiredParams: "";
+      };
+      jsName: "accounts.plugins.profilePhoto";
+      namespace: "accounts";
+      className: "profilePhoto.MyPhotoPlugin";
+      instanceMethods: {
+      };
+    }>;
 
-      let _activeNamespaces: {};
+    const initHostedPage: Runner<{
+      methodName: "initHostedPage";
+      settings: {
+        useBasePlugin: true;
+        defaultParams: {
+        };
+        defaultPopupParams: {
+        };
+        requiredParams: "";
+      };
+      jsName: "accounts.plugins.pages";
+      namespace: "accounts";
+      className: "Pages.PagesPlugin";
+      instanceMethods: {
+      };
+    }>;
 
-      function add(
-        eventName: string,
-        eventHandler: (e: IEventObject) => void,
-        type?: string,
-        context?: any,
-        namespace?: string,
-        params?: any
-      ): IEventHandlerInfo;
+    const showScreenSet: Runner<{
+      methodName: "showScreenSet";
+      settings: {
+        useBasePlugin: true;
+        defaultParams: {
+        };
+        defaultPopupParams: {
+        };
+        requiredParams: "";
+      };
+      jsName: "accounts.plugins.screenSet";
+      namespace: "accounts";
+      className: "ScreenSet.ScreenSetPlugin";
+      instanceMethods: ["hideScreenSet","switchScreen"];
+      pluginType: any;
+      injectionInfo: {
+        name: "screenSet";
+        namespace: "accounts";
+        methodName: "showScreenSet";
+        jsName: "gigya.services.accounts.plugins.screenSet";
+        publicMethods: {
+          hideScreenSet: {
+            instanceMethod: "cancel";
+            argNames: {
+            };
+          };
+          switchScreen: {
+            instanceMethod: "switchScreen";
+            argNames: ["screen"];
+          };
+        };
+      };
+    }>;
 
-      function remove(fullEventName: any, registeredHandler: any): void;
+    const login: Runner<{
+      methodName: "accounts.login";
+      settings: {
+        riskAssessment: true;
+      };
+      schema: "loginID|password|sessionExpiration|targetEnv|regToken|include|actionAttributes|profileAttributes|includeUserInfo|includeDynamicSchema|bp_channel_url|captchaToken|blackBoxToken|captchaType|captchaText|loginMode|signKeys|lang|riskContext|aToken";
+      requiresSession: false;
+      adapterSettings: {
+        clearSessionCondition: any;
+        forcePost: true;
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: undefined;
+    }>;
 
-      function dispatch(eventObj: any, params?: any): number;
+    const linkAccounts: Runner<{
+      methodName: "accounts.linkAccounts";
+      settings: {
+      };
+      schema: "loginID|password|sessionExpiration|targetEnv|include|regToken|includeUserInfo|bp_channel_url|signKeys";
+      requiresSession: false;
+      adapterSettings: {
+        forcePost: true;
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: undefined;
+    }>;
 
-      function dispatchWhenHandlerAdded(
-        eventObj: Object,
-        params?: Object,
-        preProcess?: (eventObj: Object, callback: Function) => void
-      ): void;
+    const notifySocialLogin: Runner<{
+      methodName: "accounts.notifySocialLogin";
+      settings: {
+      };
+      schema: "loginMode|providerSessions|sessionExpiration";
+      requiresSession: true;
+      adapterSettings: {
+        forcePost: true;
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: "providerSessions";
+    }>;
 
-      function dispatchWhenHandlersAdded(
-        eventNames: Array<string>,
-        eventObj: Object,
-        params?: Object,
-        preProcess?: (eventObj: Object, callback: Function) => void
-      ): void;
+    const initRegistration: Runner<{
+      methodName: "accounts.initRegistration";
+      settings: {
+        preprocessor: any;
+      };
+      schema: "sdk|isLite|dataCenter";
+      requiresSession: false;
+      adapterSettings: {
+        clearSession: true;
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: undefined;
+    }>;
 
-      function getEventsForOperation(operation: any): string;
-    }
+    const initProgression: Runner<{
+      methodName: "accounts.initProgression";
+      settings: {
+        preprocessor: any;
+      };
+      schema: "sdk|regToken";
+      requiresSession: false;
+      adapterSettings: {
+        clearSession: true;
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: undefined;
+    }>;
 
-    function addMap(map: any): void;
+    const register: Runner<{
+      methodName: "accounts.register";
+      settings: {
+        riskAssessment: true;
+      };
+      schema: "username|email|password|UID|regToken|siteUID|secretQuestion|secretAnswer|regSource|profile|preferences|displayedPreferences|data|captchaText|captchaType|captchaToken|blackBoxToken|lang|hashedPassword|pwHashAlgorithm|skipVerification|finalizeRegistration|targetEnv|sessionExpiration|include|actionAttributes|profileAttributes|includeUserInfo|bp_channel_url|signKeys|subscriptions|communications|addresses";
+      requiresSession: false;
+      adapterSettings: {
+        forcePost: true;
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: undefined;
+    }>;
 
-    function dispatchErrorFromResponse(
-      widgetParams: any,
-      response: any,
-      additionalProperties?: any
-    ): void;
+    const finalizeRegistration: Runner<{
+      methodName: "accounts.finalizeRegistration";
+      settings: {
+      };
+      schema: "regToken|targetEnv|include|includeUserInfo|bp_channel_url|allowAccountsLinking|signKeys|subscriptions";
+      requiresSession: undefined;
+      adapterSettings: {
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: undefined;
+    }>;
 
-    function dispatchInvalidParamError(widgetParams: any, paramName: any): void;
+    const captchaImage: Runner<{
+      methodName: "accounts.captchaImage";
+      settings: {
+      };
+      schema: "regToken";
+      requiresSession: undefined;
+      adapterSettings: {
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: undefined;
+    }>;
 
-    function dispatchForWidget(e: any, widgetParams: any): any;
-  }
-  namespace external {
-    namespace facebook {
-      let initializedTime: Date;
-      let isLoggedIn: boolean;
-      let isConnected: boolean;
+    const importProfilePhoto: Runner<{
+      methodName: "accounts.importProfilePhoto";
+      settings: {
+      };
+      schema: "regToken|URL|publish";
+      requiresSession: undefined;
+      adapterSettings: {
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: undefined;
+    }>;
 
-      function load(noAppID: any): void;
+    const setProfilePhoto: Runner<{
+      methodName: "accounts.setProfilePhoto";
+      settings: {
+      };
+      schema: "regToken|publish|photoBytes";
+      requiresSession: undefined;
+      adapterSettings: {
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: undefined;
+    }>;
 
-      function runWhenLoaded(callback: any): void;
+    const resetPassword: Runner<{
+      methodName: "accounts.resetPassword";
+      settings: {
+        riskAssessment: true;
+      };
+      schema: "lang|loginID|passwordResetToken|secretAnswer|securityFields|newPassword|email|captchaType|captchaToken|blackBoxToken";
+      requiresSession: false;
+      adapterSettings: {
+        forcePost: true;
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: undefined;
+    }>;
 
-      function getParams(): {};
-    }
-    namespace googlePlus {
-      function load(): void;
-    }
-    namespace opengraph {}
-  }
-  namespace fidm {
-    namespace saml {
-      interface IInitSSOParams {
-        spName: string;
-        redirectURL: string;
-      }
+    const removeProfilePhoto: Runner<{
+      methodName: "accounts.removeProfilePhoto";
+      settings: {
+      };
+      schema: "regToken";
+      requiresSession: undefined;
+      adapterSettings: {
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: undefined;
+    }>;
 
-      export interface ICancelSSOParams {
-        statusCode: string;
-        cancelCode: number;
-      }
+    const isAvailableLoginID: Runner<{
+      methodName: "accounts.isAvailableLoginID";
+      settings: {
+      };
+      schema: "loginID";
+      requiresSession: undefined;
+      adapterSettings: {
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: undefined;
+    }>;
 
-      interface IContinueSSOParams {}
+    const resendVerificationCode: Runner<{
+      methodName: "accounts.resendVerificationCode";
+      settings: {
+      };
+      schema: "regToken|email";
+      requiresSession: undefined;
+      adapterSettings: {
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: undefined;
+    }>;
 
-      interface ILogoutSSOParams {}
+    const getCaptcha: Runner<{
+      methodName: "accounts.getCaptcha";
+      settings: {
+      };
+      schema: "";
+      requiresSession: undefined;
+      adapterSettings: {
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: undefined;
+    }>;
 
-      function initSSO(params: IInitSSOParams): void;
-      function continueSSO(params: IContinueSSOParams, proxy?: boolean): void;
-      function cancelSSO(params: ICancelSSOParams, proxy?: boolean): void;
-      function logoutSSO(params: ILogoutSSOParams, proxy?: boolean): void;
-    }
-    namespace oidc {
-      interface ISSOContext {
-        apiKey?: string;
-      }
+    const getPolicies: Runner<{
+      methodName: "accounts.getPolicies";
+      settings: {
+        preprocessor: any;
+      };
+      schema: "sections";
+      requiresSession: undefined;
+      adapterSettings: {
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: undefined;
+    }>;
 
-      interface IGetContextParams {
-        opKey: string;
-        sso_token: string;
-      }
+    const getSchema: Runner<{
+      methodName: "accounts.getSchema";
+      settings: {
+        preprocessor: any;
+      };
+      schema: "sections|schemaType";
+      requiresSession: false;
+      adapterSettings: {
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: undefined;
+    }>;
 
-      interface IContinueParams {
-        opKey: string;
-        context: string;
-        login_token: string;
-        [key: string]: any;
-      }
+    const getSiteConsentDetails: Runner<{
+      methodName: "accounts.getSiteConsentDetails";
+      settings: {
+        preprocessor: any;
+      };
+      schema: "";
+      requiresSession: false;
+      adapterSettings: {
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: undefined;
+    }>;
 
-      namespace op {
-        function getContext(params: IGetContextParams): Promise<ISSOContext>;
-        function redirectToContinue(params: IContinueParams): void;
-        function deviceContinue(): void;
-      }
-    }
-  }
-  namespace log {
-    let _log: any[];
+    const getLegalStatements: Runner<{
+      methodName: "accounts.getLegalStatements";
+      settings: {
+        preprocessor: any;
+      };
+      schema: "consentId|lang";
+      requiresSession: false;
+      adapterSettings: {
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: undefined;
+    }>;
 
-    function enable(): void;
+    const verifyLogin: Runner<{
+      methodName: "accounts.verifyLogin";
+      settings: {
+      };
+      schema: "include|extraProfileFields|targetEnv";
+      requiresSession: true;
+      adapterSettings: {
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: undefined;
+    }>;
 
-    function disable(): void;
+    const getAccountInfo: Runner<{
+      methodName: "accounts.getAccountInfo";
+      settings: {
+      };
+      schema: "include|extraProfileFields|regToken|lang|includeCommunications";
+      requiresSession: true;
+      adapterSettings: {
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: "regToken";
+    }>;
 
-    function _isEnabled(): boolean;
+    const setAccountInfo: Runner<{
+      methodName: "accounts.setAccountInfo";
+      settings: {
+        riskAssessment: true;
+      };
+      schema: "profile|preferences|displayedPreferences|data|regToken|verifyToken|oldPassword|password|newPassword|addLoginEmails|removeLoginEmails|username|secretQuestion|secretAnswer|requirePasswordChange|conflictHandling|tfaStatus|rba|subscriptions|communications|preferences|lang|captchaToken|blackBoxToken|captchaType|customIdentifiers|addresses";
+      requiresSession: true;
+      adapterSettings: {
+        forcePost: true;
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: "regToken";
+    }>;
 
-    function addLog(title: string, obj: any, writeToConsole?: boolean): void;
+    const logout: Runner<{
+      methodName: "accounts.logout";
+      settings: {
+        preprocessor: any;
+        disableCache: true;
+      };
+      schema: "signIDs|samlContext|sustainLogoutURLs";
+      requiresSession: true;
+      adapterSettings: {
+        requiresSession: any;
+        forceHttps: true;
+      };
+      altSessionParams: undefined;
+    }>;
 
-    function debug(): void;
+    const search: Runner<{
+      methodName: "accounts.search";
+      settings: {
+      };
+      schema: "expTime|querySig|query";
+      requiresSession: undefined;
+      adapterSettings: {
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: undefined;
+    }>;
 
-    function show(): void;
-  }
-  namespace legacyReports {
-    interface Report {
-      name: string;
-      time: string;
-      source?: string;
-      sourceData?: Object;
-      reportData?: Object;
-      cid?: string;
-    }
+    const getScreenSets: Runner<{
+      methodName: "accounts.getScreenSets";
+      settings: {
+        preprocessor: any;
+      };
+      schema: "screenSetIDs|include|lang|screenSetVersion";
+      requiresSession: false;
+      adapterSettings: {
+        useHttpStatusCodes: true;
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: undefined;
+    }>;
 
-    let queue: Report[];
+    const getConflictingAccount: Runner<{
+      methodName: "accounts.getConflictingAccount";
+      settings: {
+      };
+      schema: "regToken|loginID";
+      requiresSession: undefined;
+      adapterSettings: {
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: undefined;
+    }>;
 
-    function trackAddressBarShares(): void;
+    const resetSitePreferences: Runner<{
+      methodName: "accounts.resetSitePreferences";
+      settings: {
+        postprocessor: any;
+      };
+      schema: "";
+      requiresSession: true;
+      adapterSettings: {
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: undefined;
+    }>;
 
-    function report(
-      event: any,
-      APIKey: any,
-      cid: any,
-      source: any,
-      sourceData: any,
-      params?: {},
-      ignoreQueue?: boolean
-    ): void;
+    const getJWT: Runner<{
+      methodName: "accounts.getJWT";
+      settings: {
+      };
+      schema: "fields|expiration|audience";
+      requiresSession: true;
+      adapterSettings: {
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: undefined;
+    }>;
 
-    function init(): void;
-  }
-  namespace services {
-    let proxy: any;
-    namespace accountService {
-      let verifyLogin: any;
-    }
-    namespace siteData {
-      function getScreenVariant(screenSetId: string, screenId: string): string;
-      function setScreenVariant(
-        screenSetId: string,
-        screenId: string,
-        variantId: string
-      ): void;
-    }
-  }
-  namespace utils {
-    const tabbable: Tabbable;
+    module 'b2b' {
+      const registerOrganization: Runner<{
+        methodName: "accounts.b2b.registerOrganization";
+        settings: {
+        };
+        schema: "organization|requester";
+        requiresSession: false;
+        adapterSettings: {
+          forcePost: true;
+          forceHttps: true;
+          requiresSession: any;
+        };
+        altSessionParams: undefined;
+      }>;
 
-    class Tabbable {
-      protected static self: Tabbable;
+      const getOrganizationSchema: Runner<{
+        methodName: "accounts.b2b.getOrganizationSchema";
+        settings: {
+          preprocessor: any;
+        };
+        schema: "";
+        requiresSession: false;
+        adapterSettings: {
+          forceHttps: true;
+          requiresSession: any;
+        };
+        altSessionParams: undefined;
+      }>;
 
-      protected static selector: string;
+      const delegatedAdminLogin: Runner<{
+        methodName: "accounts.b2b.delegatedAdminLogin";
+        settings: {
+        };
+        schema: "orgId|lang";
+        requiresSession: true;
+        adapterSettings: {
+          forceHttps: true;
+          requiresSession: any;
+        };
+        altSessionParams: undefined;
+      }>;
 
-      /**
-       * Do not use - access via `gigya.utils.tabbable`.
-       */
-      protected constructor();
+      const getOrganizationInfo: Runner<{
+        methodName: "accounts.b2b.getOrganizationInfo";
+        settings: {
+        };
+        schema: "orgId|bpid";
+        requiresSession: true;
+        adapterSettings: {
+          forceHttps: true;
+          requiresSession: any;
+        };
+        altSessionParams: undefined;
+      }>;
 
-      /**
-       * Do not use - access via `gigya.utils.tabbable`.
-       */
-      static getInstance(): Tabbable;
+      const setOrganizationContext: Runner<{
+        methodName: "accounts.b2b.setOrganizationContext";
+        settings: {
+        };
+        schema: "bpid";
+        requiresSession: true;
+        adapterSettings: {
+          forceHttps: true;
+          requiresSession: any;
+        };
+        altSessionParams: undefined;
+      }>;
 
-      /**
-       * When bound, the user will have their tab focused locked into the container while their focus is on an element in the container.
-       *
-       * - Hitting tab while focused on the last tabbable element will set focus to the first tabbable element.
-       * - Hitting shift+tab while focused on the first element will set focus to the last tabbable element.
-       */
-      bindTabLooping(container: HTMLElement, filterSelector?: string): void;
+      const getOrganizationContext: Runner<{
+        methodName: "accounts.b2b.getOrganizationContext";
+        settings: {
+        };
+        schema: "";
+        requiresSession: true;
+        adapterSettings: {
+          forceHttps: true;
+          requiresSession: any;
+        };
+        altSessionParams: undefined;
+      }>;
 
-      /**
-       * Restore natural tabbing behavior.
-       */
-      unbindTabLooping(container: HTMLElement): void;
+      module 'auth' {
+        const getAssets: Runner<{
+          methodName: "accounts.b2b.auth.getAssets";
+          settings: {
+          };
+          schema: "appId|bpid|orgId|includePolicies|environments";
+          requiresSession: true;
+          adapterSettings: {
+            forceHttps: true;
+            requiresSession: any;
+          };
+          altSessionParams: undefined;
+        }>;
 
-      /**
-       * Get sorted list of tabbable elements.
-       */
-      getSortedTabbableElements(
-        container: Element,
-        filterSelector?: string
-      ): Array<HTMLElement>;
-
-      /**
-       * Create and track listener function.
-       */
-      protected createListener(
-        container: HTMLElement,
-        filterSelector?: string
-      ): EventListener;
-
-      /**
-       * Filter out elements that aren't tabbable.
-       */
-      protected isTabbable(
-        element: HTMLElement,
-        filterSelector?: string
-      ): boolean;
-
-      /**
-       * Get next tabbable element, looping if necessary. Returns undefined if the current element isn't in the list of tabbable elements.
-       */
-      protected getNextTabbableElement(
-        container: HTMLElement,
-        currentElement: HTMLElement,
-        filterSelector?: string
-      ): HTMLElement | undefined;
-
-      /**
-       * Get previous tabbable element, looping if necessary. Returns undefined if the current element isn't in the list of tabbable elements.
-       */
-      protected getPreviousTabbableElement(
-        container: HTMLElement,
-        currentElement: HTMLElement,
-        filterSelector?: string
-      ): HTMLElement | undefined;
-
-      /**
-       * Sort algorithm that takes into account the tab index and natural sort order for each element.
-       *
-       * NOTE:
-       * Not all browsers implement stable sorting. Specifically Chrome's sort is NOT stable.
-       * A sorting algorithm is "stable" when two objects with equal keys appear in the same order after being sorted.
-       */
-      protected sort(a: HTMLElement, b: HTMLElement): number;
-
-      /**
-       * Elements with a tab index of 0 should appear after all elements with a tab index.
-       */
-      protected getTabIndex(el: HTMLElement): number;
-
-      /**
-       * Find event listener function by container element.
-       */
-      protected getListenerByContainer(
-        container: HTMLElement
-      ): EventListenerOrEventListenerObject | undefined;
-    }
-
-    function getParamValue(str: string, key: string, del?: string): string;
-
-    function getReqParamValue(str: string, key: string): string;
-
-    function getGigyaScriptElement(): HTMLScriptElement;
-
-    namespace stringUtils {
-      function trim(s: string): string;
-
-      function format(s: string, ...rest: string[]): string;
-
-      function capitalize(s: string): string;
-
-      function endsWith(s: string, suffix: string): boolean;
-
-      function escapeRegExp(str: string): string;
-
-      function replaceAll(str: string, find: string, replace: string): string;
-
-      function mergeCommaSeparatedValues(str1: string, str2: string): string;
-    }
-    namespace cookie {
-      function getDefaultDomain(
-        pageDomain?: string,
-        baseDomain?: string
-      ): string;
-
-      function get(name: string): string;
-
-      function set(
-        name: string,
-        value: string,
-        expires_in?: any,
-        cookieDomain?: string,
-        dontUseRootPath?: boolean,
-        sameSite?: 'None' | 'Strict' | 'Lax'
-      ): void;
-
-      function remove(name: string, domain?: string, doc?: Document): void;
-
-      function getInfiniteExpirationTimeInSeconds(): number;
-
-      function canSaveCookie(cookieDomain?: string): boolean;
-    }
-    namespace array {
-      interface IMap<T> {
-        [key: string]: T;
       }
 
-      interface IEnumerable<T> {
-        length: number;
+    }
 
-        [i: number]: T;
+    module 'sso' {
+      const login: Runner<{
+        methodName: "accounts.sso.login";
+        settings: {
+          oauth: true;
+        };
+        schema: "redirectURL|state|authFlow|context|useChildContext";
+        requiresSession: false;
+        adapterSettings: {
+          oauthMode: number;
+          forceHttps: true;
+          requiresSession: any;
+        };
+        altSessionParams: undefined;
+      }>;
+
+    }
+
+    module 'tfa' {
+      const getProviders: Runner<{
+        methodName: "accounts.tfa.getProviders";
+        settings: {
+        };
+        schema: "regToken";
+        requiresSession: true;
+        adapterSettings: {
+          forceHttps: true;
+          requiresSession: any;
+        };
+        altSessionParams: "regToken";
+      }>;
+
+      const initTFA: Runner<{
+        methodName: "accounts.tfa.initTFA";
+        settings: {
+        };
+        schema: "provider|mode|regToken";
+        requiresSession: false;
+        adapterSettings: {
+          forceHttps: true;
+          requiresSession: any;
+        };
+        altSessionParams: undefined;
+      }>;
+
+      const finalizeTFA: Runner<{
+        methodName: "accounts.tfa.finalizeTFA";
+        settings: {
+        };
+        schema: "gigyaAssertion|providerAssertion|tempDevice|regToken";
+        requiresSession: true;
+        adapterSettings: {
+          forceHttps: true;
+          requiresSession: any;
+        };
+        altSessionParams: "regToken";
+      }>;
+
+      const deactivateProvider: Runner<{
+        methodName: "accounts.tfa.deactivateProvider";
+        settings: {
+        };
+        schema: "provider";
+        requiresSession: true;
+        adapterSettings: {
+          forceHttps: true;
+          requiresSession: any;
+        };
+        altSessionParams: undefined;
+      }>;
+
+      const unregisterDevice: Runner<{
+        methodName: "accounts.tfa.unregisterDevice";
+        settings: {
+        };
+        schema: "allDevices";
+        requiresSession: true;
+        adapterSettings: {
+          forceHttps: true;
+          requiresSession: any;
+        };
+        altSessionParams: undefined;
+      }>;
+
+      module 'backupcodes' {
+        const get: Runner<{
+          methodName: "accounts.tfa.backupcodes.get";
+          settings: {
+          };
+          schema: "gigyaAssertion";
+          requiresSession: true;
+          adapterSettings: {
+            forceHttps: true;
+            requiresSession: any;
+          };
+          altSessionParams: undefined;
+        }>;
+
+        const create: Runner<{
+          methodName: "accounts.tfa.backupcodes.create";
+          settings: {
+          };
+          schema: "gigyaAssertion";
+          requiresSession: true;
+          adapterSettings: {
+            forceHttps: true;
+            requiresSession: any;
+          };
+          altSessionParams: undefined;
+        }>;
+
+        const verify: Runner<{
+          methodName: "accounts.tfa.backupcodes.verify";
+          settings: {
+          };
+          schema: "gigyaAssertion|code|regToken";
+          requiresSession: false;
+          adapterSettings: {
+            forceHttps: true;
+            requiresSession: any;
+          };
+          altSessionParams: undefined;
+        }>;
+
       }
 
-      function indexOf(ar: any[], o: any): number;
+      module 'phone' {
+        const getRegisteredPhoneNumbers: Runner<{
+          methodName: "accounts.tfa.phone.getRegisteredPhoneNumbers";
+          settings: {
+            preprocessor: any;
+          };
+          schema: "gigyaAssertion";
+          requiresSession: false;
+          adapterSettings: {
+            forceHttps: true;
+            requiresSession: any;
+          };
+          altSessionParams: undefined;
+        }>;
 
-      function clone(ar: any[]): any[];
+        const removePhone: Runner<{
+          methodName: "accounts.tfa.phone.removePhone";
+          settings: {
+          };
+          schema: "gigyaAssertion|phoneId";
+          requiresSession: false;
+          adapterSettings: {
+            forceHttps: true;
+            requiresSession: any;
+          };
+          altSessionParams: undefined;
+        }>;
 
-      function intersect(array: any[], ...args: any[]): any[];
+        const sendVerificationCode: Runner<{
+          methodName: "accounts.tfa.phone.sendVerificationCode";
+          settings: {
+          };
+          schema: "gigyaAssertion|lang|phoneID|phone|method|regToken";
+          requiresSession: false;
+          adapterSettings: {
+            forceHttps: true;
+            requiresSession: any;
+          };
+          altSessionParams: undefined;
+        }>;
 
-      function forEach<T>(
-        arr: IEnumerable<T>,
-        action: (element: T, index?: number, arr?: IEnumerable<T>) => void
-      ): void;
+        const completeVerification: Runner<{
+          methodName: "accounts.tfa.phone.completeVerification";
+          settings: {
+          };
+          schema: "gigyaAssertion|phvToken|code|regToken";
+          requiresSession: false;
+          adapterSettings: {
+            forceHttps: true;
+            requiresSession: any;
+          };
+          altSessionParams: undefined;
+        }>;
 
-      function some<T>(
-        arr: IEnumerable<T>,
-        condition: (element: T, index?: number, arr?: IEnumerable<T>) => boolean
-      ): boolean;
+      }
 
-      function every<T>(
-        arr: IEnumerable<T>,
-        condition: (element: T, index?: number, arr?: IEnumerable<T>) => boolean
-      ): boolean;
+      module 'email' {
+        const getEmails: Runner<{
+          methodName: "accounts.tfa.email.getEmails";
+          settings: {
+            preprocessor: any;
+          };
+          schema: "gigyaAssertion";
+          requiresSession: false;
+          adapterSettings: {
+            forceHttps: true;
+            requiresSession: any;
+          };
+          altSessionParams: undefined;
+        }>;
 
-      function map<S, T>(
-        arr: IEnumerable<S>,
-        action: (element: S, index?: number, arr?: IEnumerable<S>) => T
-      ): T[];
+        const sendVerificationCode: Runner<{
+          methodName: "accounts.tfa.email.sendVerificationCode";
+          settings: {
+          };
+          schema: "emailID|gigyaAssertion|lang|regToken";
+          requiresSession: false;
+          adapterSettings: {
+            forceHttps: true;
+            requiresSession: any;
+          };
+          altSessionParams: undefined;
+        }>;
 
-      function first<T>(
-        arr: IEnumerable<T>,
-        condition: (element: T, index?: number, arr?: IEnumerable<T>) => boolean
-      ): T;
+        const completeVerification: Runner<{
+          methodName: "accounts.tfa.email.completeVerification";
+          settings: {
+          };
+          schema: "gigyaAssertion|phvToken|code|regToken";
+          requiresSession: false;
+          adapterSettings: {
+            forceHttps: true;
+            requiresSession: any;
+          };
+          altSessionParams: undefined;
+        }>;
 
-      function getUniqueValues<T>(arr: T[]): T[];
+      }
 
-      function removeByValue(ar: any[], value: Object): void;
+      module 'totp' {
+        const register: Runner<{
+          methodName: "accounts.tfa.totp.register";
+          settings: {
+          };
+          schema: "gigyaAssertion|includeSecret";
+          requiresSession: false;
+          adapterSettings: {
+            forceHttps: true;
+            requiresSession: any;
+          };
+          altSessionParams: undefined;
+        }>;
 
-      function forEachProp<T>(
-        obj: IMap<T>,
-        action: (prop: T, name: string, obj: IMap<T>) => void
-      ): any;
-      function forEachProp<T extends Object>(
-        obj: T,
-        action: (prop: any, name: string, obj: T) => void
-      ): any;
+        const verify: Runner<{
+          methodName: "accounts.tfa.totp.verify";
+          settings: {
+          };
+          schema: "gigyaAssertion|sctToken|code|name|regToken";
+          requiresSession: false;
+          adapterSettings: {
+            forceHttps: true;
+            requiresSession: any;
+          };
+          altSessionParams: undefined;
+        }>;
 
-      function removeByProperty(
-        ar: any[],
-        property: string,
-        value: string
-      ): void;
+        const getRegistered: Runner<{
+          methodName: "accounts.tfa.totp.getRegistered";
+          settings: {
+            preprocessor: any;
+          };
+          schema: "gigyaAssertion";
+          requiresSession: false;
+          adapterSettings: {
+            forceHttps: true;
+            requiresSession: any;
+          };
+          altSessionParams: undefined;
+        }>;
 
-      function getArrayFromString(
-        str: string,
-        delimiter: string,
-        lowerCase?: boolean
-      ): string[];
+        const remove: Runner<{
+          methodName: "accounts.tfa.totp.remove";
+          settings: {
+          };
+          schema: "gigyaAssertion|id";
+          requiresSession: false;
+          adapterSettings: {
+            forceHttps: true;
+            requiresSession: any;
+          };
+          altSessionParams: undefined;
+        }>;
 
-      function firstIndex<T>(
-        arr: IEnumerable<T>,
-        condition: (element: T, index?: number, arr?: IEnumerable<T>) => boolean
-      ): number;
+      }
 
-      function includes<T>(arr: T[], value: T): boolean;
+      module 'push' {
+        const isVerified: Runner<{
+          methodName: "accounts.tfa.push.isVerified";
+          settings: {
+          };
+          schema: "gigyaAssertion|regToken";
+          requiresSession: false;
+          adapterSettings: {
+            forceHttps: true;
+            requiresSession: any;
+          };
+          altSessionParams: undefined;
+        }>;
 
-      function containsOnly(array1: any[], array2: any[]): boolean;
+        const sendVerification: Runner<{
+          methodName: "accounts.tfa.push.sendVerification";
+          settings: {
+          };
+          schema: "gigyaAssertion|regToken";
+          requiresSession: false;
+          adapterSettings: {
+            forceHttps: true;
+            requiresSession: any;
+          };
+          altSessionParams: undefined;
+        }>;
+
+      }
+
     }
-    namespace date {
-      function now(): number;
+
+    module 'groups' {
+      const getSchema: Runner<{
+        methodName: "accounts.groups.getSchema";
+        settings: {
+        };
+        schema: "model";
+        requiresSession: true;
+        adapterSettings: {
+          forceHttps: true;
+          requiresSession: any;
+        };
+        altSessionParams: undefined;
+      }>;
+
+      const registerGroup: Runner<{
+        methodName: "accounts.groups.registerGroup";
+        settings: {
+        };
+        schema: "model|groupId|groupData";
+        requiresSession: true;
+        adapterSettings: {
+          forceHttps: true;
+          requiresSession: any;
+        };
+        altSessionParams: undefined;
+      }>;
+
+      const setGroupInfo: Runner<{
+        methodName: "accounts.groups.setGroupInfo";
+        settings: {
+        };
+        schema: "model|groupId|groupData";
+        requiresSession: true;
+        adapterSettings: {
+          forceHttps: true;
+          requiresSession: any;
+        };
+        altSessionParams: undefined;
+      }>;
+
+      const getGroupInfo: Runner<{
+        methodName: "accounts.groups.getGroupInfo";
+        settings: {
+        };
+        schema: "model|groupId";
+        requiresSession: true;
+        adapterSettings: {
+          forceHttps: true;
+          requiresSession: any;
+        };
+        altSessionParams: undefined;
+      }>;
+
+      const deleteGroup: Runner<{
+        methodName: "accounts.groups.deleteGroup";
+        settings: {
+        };
+        schema: "model|groupId";
+        requiresSession: true;
+        adapterSettings: {
+          forceHttps: true;
+          requiresSession: any;
+        };
+        altSessionParams: undefined;
+      }>;
+
+      const setGroupMemberInfo: Runner<{
+        methodName: "accounts.groups.setGroupMemberInfo";
+        settings: {
+        };
+        schema: "model|groupId|uid|relationshipData|permissions";
+        requiresSession: true;
+        adapterSettings: {
+          forceHttps: true;
+          requiresSession: any;
+        };
+        altSessionParams: undefined;
+      }>;
+
+      const getGroupMemberInfo: Runner<{
+        methodName: "accounts.groups.getGroupMemberInfo";
+        settings: {
+        };
+        schema: "model|groupId|uid|include";
+        requiresSession: true;
+        adapterSettings: {
+          forceHttps: true;
+          requiresSession: any;
+        };
+        altSessionParams: undefined;
+      }>;
+
+      const removeMember: Runner<{
+        methodName: "accounts.groups.removeMember";
+        settings: {
+        };
+        schema: "model|groupId|uid";
+        requiresSession: true;
+        adapterSettings: {
+          forceHttps: true;
+          requiresSession: any;
+        };
+        altSessionParams: undefined;
+      }>;
+
+      const getAllMemberGroups: Runner<{
+        methodName: "accounts.groups.getAllMemberGroups";
+        settings: {
+        };
+        schema: "uid|flatNestedFields";
+        requiresSession: true;
+        adapterSettings: {
+          forceHttps: true;
+          requiresSession: any;
+        };
+        altSessionParams: undefined;
+      }>;
+
+      const searchGroupMembers: Runner<{
+        methodName: "accounts.groups.searchGroupMembers";
+        settings: {
+        };
+        schema: "model|groupId|limit|start";
+        requiresSession: true;
+        adapterSettings: {
+          forceHttps: true;
+          requiresSession: any;
+        };
+        altSessionParams: undefined;
+      }>;
+
+      const createInvitation: Runner<{
+        methodName: "accounts.groups.createInvitation";
+        settings: {
+        };
+        schema: "model|groupId|isOneTime";
+        requiresSession: true;
+        adapterSettings: {
+          forceHttps: true;
+          requiresSession: any;
+        };
+        altSessionParams: undefined;
+      }>;
+
+      const invitationConfirm: Runner<{
+        methodName: "accounts.groups.invitationConfirm";
+        settings: {
+        };
+        schema: "invitationId";
+        requiresSession: false;
+        adapterSettings: {
+          forceHttps: true;
+          requiresSession: any;
+        };
+        altSessionParams: undefined;
+      }>;
+
+      const finalizeInvitation: Runner<{
+        methodName: "accounts.groups.finalizeInvitation";
+        settings: {
+        };
+        schema: "token";
+        requiresSession: true;
+        adapterSettings: {
+          forceHttps: true;
+          requiresSession: any;
+        };
+        altSessionParams: undefined;
+      }>;
+
     }
-    namespace delegate {
-      function create(scope: any, method: Function): (...args: any[]) => any;
+
+    module 'otp' {
+      const sendCode: Runner<{
+        methodName: "accounts.otp.sendCode";
+        settings: {
+          riskAssessment: true;
+          preprocessor: any;
+        };
+        schema: "regToken|phoneNumber|email|lang|captchaToken|captchaType|blackBoxToken|dataCenter|phvToken";
+        requiresSession: false;
+        adapterSettings: {
+          forcePost: true;
+          forceHttps: true;
+          requiresSession: any;
+        };
+        altSessionParams: undefined;
+      }>;
+
+      const login: Runner<{
+        methodName: "accounts.otp.login";
+        settings: {
+        };
+        schema: "vToken|code|targetEnv|includeUserInfo|include|regSource|sessionExpiration";
+        requiresSession: false;
+        adapterSettings: {
+          forcePost: true;
+          forceHttps: true;
+          requiresSession: any;
+        };
+        altSessionParams: undefined;
+      }>;
+
+      const update: Runner<{
+        methodName: "accounts.otp.update";
+        settings: {
+        };
+        schema: "vToken|code|regToken";
+        requiresSession: false;
+        adapterSettings: {
+          forceHttps: true;
+          requiresSession: any;
+        };
+        altSessionParams: undefined;
+      }>;
+
     }
-    namespace templates {
-      function fill(template: Function, oPlaceholders: any): string;
-      function fill(template: string, oPlaceholders: any): string;
-    }
-    namespace viewport {
-      function getScroll(): {
-        top: number;
-        left: number;
-      };
 
-      function getOrientation(): number;
+    module 'auth' {
+      const guest: Runner<{
+        methodName: "accounts.auth.guest";
+        settings: {
+        };
+        schema: "identifier|identifierType";
+        requiresSession: false;
+        adapterSettings: {
+          forceHttps: true;
+          requiresSession: any;
+        };
+        altSessionParams: undefined;
+      }>;
 
-      function getInnerSize(): {
-        w: number;
-        h: number;
-      };
+      const getMethods: Runner<{
+        methodName: "accounts.auth.getMethods";
+        settings: {
+        };
+        schema: "identifier|aToken";
+        requiresSession: false;
+        adapterSettings: {
+          forceHttps: true;
+          requiresSession: any;
+        };
+        altSessionParams: undefined;
+      }>;
 
-      function getOuterSize(): {
-        w: number;
-        h: number;
-      };
+      const login: Runner<{
+        methodName: "accounts.auth.login";
+        settings: {
+        };
+        schema: "accessToken|sessionExpiration|targetEnv|include|includeUserInfo|loginMode|lang";
+        requiresSession: false;
+        adapterSettings: {
+          clearSessionCondition: any;
+          forcePost: true;
+          forceHttps: true;
+          requiresSession: any;
+        };
+        altSessionParams: undefined;
+      }>;
 
-      function getMiddleCenter(): {
-        top: number;
-        left: number;
-      };
+      module 'otp' {
+        const verify: Runner<{
+          methodName: "accounts.auth.otp.verify";
+          settings: {
+          };
+          schema: "vToken|code";
+          requiresSession: false;
+          adapterSettings: {
+            forceHttps: true;
+            requiresSession: any;
+          };
+          altSessionParams: undefined;
+        }>;
 
-      function isRectHorizontallyVisible(rect: {
-        top: number;
-        bottom: number;
-        left: number;
-        right: number;
-      }): boolean;
+        const authenticate: Runner<{
+          methodName: "accounts.auth.otp.authenticate";
+          settings: {
+          };
+          schema: "vToken|code";
+          requiresSession: false;
+          adapterSettings: {
+            forceHttps: true;
+            requiresSession: any;
+          };
+          altSessionParams: undefined;
+        }>;
 
-      function isRectFullyVisible(rect: {
-        top: number;
-        bottom: number;
-        left: number;
-        right: number;
-      }): boolean;
+        module 'email' {
+          const sendCode: Runner<{
+            methodName: "accounts.auth.otp.email.sendCode";
+            settings: {
+            };
+            schema: "email|lang";
+            requiresSession: false;
+            adapterSettings: {
+              forceHttps: true;
+              requiresSession: any;
+            };
+            altSessionParams: undefined;
+          }>;
 
-      function scrollIntoView(element: HTMLElement): void;
-    }
-    namespace JSON {
-      function serialize(
-        obj: any,
-        includeFunctions?: boolean,
-        prettyPrint?: boolean,
-        l?: number,
-        maxLevel?: number
-      ): string;
+          const login: Runner<{
+            methodName: "accounts.auth.otp.email.login";
+            settings: {
+            };
+            schema: "code|vToken|targetEnv|includeUserInfo|include|regSource|sessionExpiration";
+            requiresSession: false;
+            adapterSettings: {
+              forcePost: true;
+              forceHttps: true;
+              requiresSession: any;
+            };
+            altSessionParams: undefined;
+          }>;
 
-      /**
-       * De-serialize JavaScript, typically used for site-provided (external) JavaScript objects (not true JSON).
-       *
-       * Objects may include unquoted keys, functions, and variable references.
-       *
-       * Will never throw an exception.
-       */
-      function deserialize<T>(json: string, defaultValue?: T, scope?: any): T;
-
-      /**
-       * De-serialize JSON inside of a try/catch block. Return default value on failure.
-       */
-      function parse<T>(json: string, defaultValue?: T): T;
-    }
-    namespace DOM {
-      let _popupContainers: any[];
-      let _pseudoContainers: any[];
-      let enableSafeCopy: any;
-
-      function getNextZIndex(): number;
-
-      function getGigyaScriptElement(fileNames: string[]): HTMLScriptElement;
-
-      function dispatch(el: HTMLElement, eventName: string): void;
-
-      function addButtonSubmitListener(
-        el: HTMLElement,
-        handler: Function,
-        event?: 'click' | 'touchend',
-        debugName?: string
-      ): void;
-
-      function addEventListener(
-        el: any,
-        eventName: string,
-        handler: Function
-      ): void;
-
-      function addActivationHandler(
-        element: HTMLElement,
-        handler: Function
-      ): void;
-
-      function removeEventListener(
-        el: any,
-        eventName: string,
-        handler: Function
-      ): void;
-
-      function disableDefaultEventHandling(event: any): void;
-
-      function addDialogBackListener(handler: (e: Event) => void): void;
-
-      function prependToBody(el: HTMLElement, document?: Document): void;
-
-      function appendToBody(el: HTMLElement, document?: Document): void;
-
-      function removeElement(el: HTMLElement): void;
-
-      function isChildOf(child: Node, parent: Node): boolean;
-
-      function isVisible(el: HTMLElement): boolean;
-
-      function getCenteredDivID(name: string): string;
-
-      function createElementWithAttributes(
-        domElemName: string,
-        domElemAttrs?: {
-          [key: string]: string;
         }
-      ): HTMLElement;
 
-      function createTopLevelDiv(id?: string): HTMLDivElement;
-
-      function hideByID(id: string): void;
-
-      function showByID(id: string): void;
-
-      function getHTMLSize(
-        html: string,
-        container: HTMLElement
-      ): {
-        w: number;
-        h: number;
-      };
-
-      function getElementsByClass(
-        parentElement: HTMLElement,
-        className: string,
-        includeParent?: boolean
-      ): HTMLElement[];
-
-      function getElementsByAttribute(
-        parentElement: HTMLElement,
-        tagName: string,
-        attributeName: string,
-        attributeValue: string
-      ): HTMLElement[];
-
-      function getElementPosition(el: HTMLElement): {
-        left: number;
-        top: number;
-        right: number;
-        bottom: number;
-      };
-
-      function addClassToElement(el: HTMLElement, className: string): void;
-
-      function removeClassFromElement(
-        el: HTMLElement,
-        className: string,
-        substring?: boolean
-      ): void;
-
-      function isElementClass(el: HTMLElement, className: string): boolean;
-
-      function cancelEvent(event: any): void;
-
-      function createElement(type: string, name: string): Node;
-
-      function setSize(
-        container: HTMLElement,
-        w: any,
-        h: any,
-        center?: boolean
-      ): void;
-
-      function attributeEncode(value: string): string;
-
-      function manipulateAttributes(
-        elements: Element[],
-        matcher: RegExp,
-        replacePredicate: (match: string) => void,
-        criteria?: (attr?: Attr) => boolean
-      ): void;
-
-      function isHTMLBooleanAttribute(attrName: string): boolean;
-
-      function isBelongToGigyaFieldset(el: Element): boolean;
-
-      function createElementFromTemplate(template: string): ChildNode;
-    }
-    namespace functions {
-      function invokeOnPageLoad(func: Function, completeOnly?: boolean): void;
-
-      function createAlias(publicName: string, fnc: Function): void;
-
-      function debounce(fn: () => void, delayMilliseconds: number): () => void;
-
-      function addSrcToIFrameIfNeeded(
-        iframe: HTMLIFrameElement,
-        src?: string
-      ): void;
-    }
-    namespace recaptcha {
-      function load(params: Object): Promise<void>;
-      function getInstance(params: Object): ReCaptcha;
-      function forceReset(): void;
-
-      interface ReCaptcha {
-        execute(siteKey?: string): Promise<string>;
-        ready(callback);
-        render(container, parameters);
-        reset(optWidgetId);
-        enterprise: ReCaptcha;
-      }
-    }
-    namespace win {
-      let _openedWindows: {};
-
-      interface WindowOptions {
-        menubar?: number;
-        toolbar?: number;
-        resizable?: number;
-        scrollbars?: number;
-        location?: number;
-        width?: string | number;
-        height?: string | number;
-        left?: string | number;
-        top?: string | number;
       }
 
-      function _calcPixels(
-        value: string | number,
-        max?: number,
-        def?: string | number,
-        positionAdjustment?: any
-      ): number;
+      module 'push' {
+        const sendVerification: Runner<{
+          methodName: "accounts.auth.push.sendVerification";
+          settings: {
+          };
+          schema: "identifier";
+          requiresSession: false;
+          adapterSettings: {
+            forceHttps: true;
+            requiresSession: any;
+          };
+          altSessionParams: undefined;
+        }>;
 
-      function open(
-        url: string,
-        windowName?: string,
-        windowOptions?: WindowOptions
-      ): boolean;
+        const isVerified: Runner<{
+          methodName: "accounts.auth.push.isVerified";
+          settings: {
+          };
+          schema: "vToken";
+          requiresSession: false;
+          adapterSettings: {
+            forceHttps: true;
+            requiresSession: any;
+          };
+          altSessionParams: undefined;
+        }>;
 
-      function close(windowName: string): void;
-    }
-    namespace validation {
-      function isExplicitTrue(val: any): boolean;
-
-      function isExplicitFalse(val: any): boolean;
-
-      function isLaterThanNow(expirationTime: number): boolean;
-    }
-    namespace object {
-      let cloneParamsForPlugin: any;
-
-      function removeUndefined(o: Object): Object;
-
-      function getPropertyBySerializedName(
-        o: Object,
-        name: string,
-        createMissingObjects: boolean
-      ): any;
-
-      function setPropertyBySerializedName(
-        o: Object,
-        name: string,
-        value: any
-      ): void;
-
-      function add(oTarget: Object, o: Object, dontOverride?: boolean): void;
-
-      function clone(
-        obj: any,
-        deepCopy?: boolean,
-        ignoreFunctions?: boolean,
-        maxLevel?: number,
-        level?: number,
-        ignoreContext?: boolean
-      ): any;
-
-      function merge<R = Object>(args: Object[], isDeepMerge?: boolean): R;
-
-      function unflatten(data: { [key: string]: string | boolean }): Object;
-
-      function flatten(
-        data: any,
-        withBracket?: boolean
-      ): { [key: string]: string | boolean };
-
-      function extractProperties(src: any, dest?: any, schema?: String): Object;
-
-      function extractProperty(src: any, paramName: string): any;
-
-      function parseToObject(str: string): any;
-
-      function expressionHelper(context: any): { getField: (path: any) => any };
-
-      function getMurmurHash(key: string, seed?: number): number;
-
-      function getHash(o: any): string;
-
-      function removePropertiesPrefix(obj: Object, prefix: string | RegExp);
-
-      function addPrefixToProperties(obj: Object, prefix: string);
-
-      function normalizeObjectKeysToLowerCase(obj: Object);
-
-      function decodeObjectKeys(obj: Object): Object;
-    }
-    namespace sanitize {
-      function sanitizeHTML(html: string): string;
-
-      function sanitizeAttribute(attributeValue: string): string;
-    }
-    namespace mouse {
-      function getPosition(): {
-        x: number;
-        y: number;
-      };
-    }
-    namespace URL {
-      interface IGetGigParamsFromUrlConfig {
-        url: string;
-        paramPrefix?: string;
-        removePrefix?: boolean;
-        keysToLower?: boolean;
       }
 
-      interface IGetContextParamsFromUrlConfig {
-        url: string;
-        unacceptableParams?: RegExp;
-        paramPrefix?: string;
+      module 'fido' {
+        const initRegisterCredentials: Runner<{
+          methodName: "accounts.auth.fido.initRegisterCredentials";
+          settings: {
+            preprocessor: any;
+          };
+          schema: "regToken|aToken";
+          requiresSession: true;
+          adapterSettings: {
+            clearSessionCondition: any;
+            forceHttps: true;
+            requiresSession: any;
+          };
+          altSessionParams: "regToken|aToken";
+        }>;
+
+        const registerCredentials: Runner<{
+          methodName: "accounts.auth.fido.registerCredentials";
+          settings: {
+            preprocessor: any;
+          };
+          schema: "token|attestation|deviceName|regToken";
+          requiresSession: false;
+          adapterSettings: {
+            forceHttps: true;
+            requiresSession: any;
+          };
+          altSessionParams: undefined;
+        }>;
+
+        const getAssertionOptions: Runner<{
+          methodName: "accounts.auth.fido.getAssertionOptions";
+          settings: {
+          };
+          schema: "";
+          requiresSession: false;
+          adapterSettings: {
+            forceHttps: true;
+            requiresSession: any;
+          };
+          altSessionParams: undefined;
+        }>;
+
+        const verifyAssertion: Runner<{
+          methodName: "accounts.auth.fido.verifyAssertion";
+          settings: {
+          };
+          schema: "token|authenticatorAssertion";
+          requiresSession: false;
+          adapterSettings: {
+            forceHttps: true;
+            requiresSession: any;
+          };
+          altSessionParams: undefined;
+        }>;
+
+        const getCredentials: Runner<{
+          methodName: "accounts.auth.fido.getCredentials";
+          settings: {
+            preprocessor: any;
+          };
+          schema: "regToken";
+          requiresSession: true;
+          adapterSettings: {
+            forceHttps: true;
+            requiresSession: any;
+          };
+          altSessionParams: "regToken";
+        }>;
+
+        const removeCredential: Runner<{
+          methodName: "accounts.auth.fido.removeCredential";
+          settings: {
+            preprocessor: any;
+          };
+          schema: "credentialId|regToken";
+          requiresSession: true;
+          adapterSettings: {
+            forceHttps: true;
+            requiresSession: any;
+          };
+          altSessionParams: "regToken";
+        }>;
+
       }
 
-      function URLEncode(value: string): string;
-
-      function getParamsFromURL(url: string, keysToLower?: boolean): Object;
-
-      function getGigParamsFromURL(config: IGetGigParamsFromUrlConfig): Object;
-
-      function getParamValueFromURL(
-        param: string,
-        url: string,
-        defaultValue: string
-      ): string;
-
-      function addParamsToURL(url: string, oParams: Object): string;
-
-      function getContextParamsFromUrl<T = { [key: string]: string }>(
-        config: IGetContextParamsFromUrlConfig
-      ): Partial<T> | T;
-    }
-    namespace keyValue {
-      function serialize(oKeyValue: Object, delimiter?: string): string;
-
-      function deserialize(
-        urlEncodedString: string,
-        delimiter?: string,
-        keysToLower?: boolean,
-        useUnescape?: boolean
-      ): any;
-    }
-    namespace script {
-      function load(
-        src: string,
-        fnOnError?: () => void,
-        fnOnLoad?: () => void,
-        loadOnce?: boolean,
-        removeAfter?: number | boolean,
-        treatTogether?: string[]
-      ): void;
-
-      enum ResourceTypes {
-        script = 0,
-        image = 1,
-        iframe = 2,
-      }
-
-      function triggerResource(
-        url: string,
-        callback?: () => void,
-        resourceType?: ResourceTypes,
-        removeAfter?: number | boolean
-      ): void;
-
-      function loadService(
-        serviceName: string,
-        fnOnError?: () => void,
-        fnOnLoad?: () => void
-      ): void;
-    }
-    namespace localStorage {
-      /**
-       * Base class for all local storage adapters.
-       */
-      abstract class AbstractLocalStorageAdapter {
-        static getName(): string;
-
-        abstract getItem(key: string): string;
-        abstract getItem(key: string, callback: () => string): void;
-
-        abstract setItem(key: string, value: string, expiresIn?: number): void;
-        abstract setItem(
-          key: string,
-          value: string,
-          expiresIn: number,
-          domain?: string
-        ): void;
-        abstract setItem(
-          key: string,
-          value: string,
-          expiresIn: number,
-          domain?: string,
-          additionalParams?: object
-        ): void;
-
-        abstract removeItem(key: string): any;
-        abstract removeItem(key: string, callback: () => void): any;
-      }
-
-      /**
-       * Cookie-based local storage.
-       */
-      class CookieStorageAdapter extends AbstractLocalStorageAdapter {
-        static isAvailable(): boolean;
-
-        static getName(): string;
-
-        getItem(key: string): string;
-
-        setItem(key: string, value: string, expiresIn?: number): void;
-
-        removeItem(key: string): void;
-      }
-
-      /**
-       * All adapters in order of priority.
-       */
-      const adapters: Array<any>;
-      /**
-       * Hold instance of adapter so that only one instance is created.
-       */
-      const instances: {
-        [key: string]: AbstractLocalStorageAdapter;
-      };
-
-      function initializeAdapter(
-        adapter: {
-          name?: string;
-          getName: () => string;
-        } & (new () => AbstractLocalStorageAdapter)
-      ): AbstractLocalStorageAdapter;
-
-      /**
-       * Test each adapter and find compatible adapter.
-       */
-      function waitForService(): AbstractLocalStorageAdapter;
-      function waitForService(
-        callback: (storage: AbstractLocalStorageAdapter) => void
-      ): AbstractLocalStorageAdapter;
-
-      function getItem(key: string): string;
-
-      function setItem(key: string, value: string, expiresIn?: number): void;
-
-      function removeItem(key: string): void;
-
-      function setObject(key: string, o: Object): void;
-
-      function getObject(key: string, defaultValue?: any): Object;
-    }
-    namespace xd {
-      let _flashListenerID: string;
-
-      function addMessageListener(
-        messageName: string,
-        params: any,
-        isPopup: boolean,
-        callback: (oEvent: Object, context: any) => void,
-        messagingMethod?: _.MessagingMethod
-      ): void;
-
-      function removeMessageListener(messageName: string): void;
-    }
-    namespace queue {
-      function _servicesStatus(): {};
-
-      function isActive(service: string): boolean;
-
-      function release(id: string, service: string): void;
-
-      function hold(id: string, service: string): void;
-
-      function queueForExecution(
-        service: string,
-        func: Function,
-        args?: any[]
-      ): void;
-    }
-    namespace sessionCache {
-      function set(key: string, response: Object): void;
-
-      function get(key: string, cacheTimeout: number): any;
-
-      function remove(key: string): void;
     }
 
-    namespace localCache {
-      function set(key: string, response: Object): void;
+    module 'identifier' {
+      const createToken: Runner<{
+        methodName: "accounts.identifier.createToken";
+        settings: {
+        };
+        schema: "identifier|identifierType";
+        requiresSession: false;
+        adapterSettings: {
+          forcePost: true;
+          forceHttps: true;
+          requiresSession: any;
+        };
+        altSessionParams: undefined;
+      }>;
 
-      function get(key: string, cacheTimeout: number): any;
-
-      function remove(key: string): void;
-    }
-    namespace browser {}
-    namespace HTTP {
-      function redirect(
-        url: string,
-        arParams: any[],
-        method?: string,
-        target?: string,
-        workDocument?: Document
-      ): void;
-    }
-    namespace keyboard {
-      const enum Keys {
-        escape = 27,
-        backspace = 8,
-        enter = 13,
-      }
-
-      interface IHotKey {
-        key: Keys;
-        elementContext?: HTMLElement;
-      }
-
-      interface IHotKeyEvent {
-        unsubscribe(): void;
-      }
-
-      function onHotKeyClicked(
-        hotKeyData: IHotKey,
-        handler: () => void
-      ): IHotKeyEvent;
-    }
-    namespace gltexp {
-      function isValid(gltexp: string): boolean;
-
-      function getMillis(gltExp: string | undefined): number;
     }
 
-    namespace toggles {
-      function has(key: string): boolean;
+    module 'identity' {
+      const authorize: Runner<{
+        methodName: "accounts.identity.authorize";
+        settings: {
+        };
+        schema: "authorization_details|grant_type";
+        requiresSession: false;
+        adapterSettings: {
+          forceHttps: true;
+          requiresSession: any;
+        };
+        altSessionParams: undefined;
+      }>;
 
-      function get<T = any>(key: string): T;
-
-      function isOn(key: string): boolean;
     }
+
+    module 'session' {
+      const verify: Runner<{
+        methodName: "accounts.session.verify";
+        settings: {
+        };
+        schema: "";
+        requiresSession: true;
+        adapterSettings: {
+          forceHttps: true;
+          requiresSession: any;
+        };
+        altSessionParams: undefined;
+      }>;
+
+    }
+
   }
-  // endregion
+
+  module '_' {
+    const runJsUnitTests: Runner<{
+      methodName: "runJsUnitTests";
+      settings: {
+        useBasePlugin: true;
+        defaultParams: {
+        };
+        defaultPopupParams: {
+        };
+        requiredParams: "";
+      };
+      jsName: "_.plugins.jsUtRunner";
+      namespace: "_";
+      className: "JsUtRunner.Jasmine.JasmineUtRunnerPlugin";
+      instanceMethods: {
+      };
+    }>;
+
+    const loadBasePlugin: Runner<{
+      methodName: "loadBasePlugin";
+      settings: {
+        useBasePlugin: true;
+        defaultParams: {
+        };
+        defaultPopupParams: {
+        };
+        requiredParams: "";
+      };
+      jsName: "_.plugins.mock";
+      namespace: "_";
+      className: "Mock.MockPlugin";
+      instanceMethods: {
+      };
+    }>;
+
+  }
+
+  module 'gcs' {
+    const getUserData: Runner<{
+      methodName: "gcs.getUserData";
+      settings: {
+      };
+      schema: "type|fields";
+      requiresSession: true;
+      adapterSettings: {
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: undefined;
+    }>;
+
+    const setUserData: Runner<{
+      methodName: "gcs.setUserData";
+      settings: {
+      };
+      schema: "data|type|updateBehavior";
+      requiresSession: true;
+      adapterSettings: {
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: undefined;
+    }>;
+
+    const search: Runner<{
+      methodName: "gcs.search";
+      settings: {
+      };
+      schema: "expTime|querySig|query";
+      requiresSession: undefined;
+      adapterSettings: {
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: undefined;
+    }>;
+
+    const getSchema: Runner<{
+      methodName: "gcs.getSchema";
+      settings: {
+      };
+      schema: "schemaType";
+      requiresSession: undefined;
+      adapterSettings: {
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: undefined;
+    }>;
+
+  }
+
+  module 'b2b' {
+    const registerOrganization: Runner<{
+      methodName: "accounts.b2b.registerOrganization";
+      settings: {
+      };
+      schema: "organization|requester";
+      requiresSession: false;
+      adapterSettings: {
+        forcePost: true;
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: undefined;
+    }>;
+
+    const getOrganizationSchema: Runner<{
+      methodName: "accounts.b2b.getOrganizationSchema";
+      settings: {
+        preprocessor: any;
+      };
+      schema: "";
+      requiresSession: false;
+      adapterSettings: {
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: undefined;
+    }>;
+
+    const delegatedAdminLogin: Runner<{
+      methodName: "accounts.b2b.delegatedAdminLogin";
+      settings: {
+      };
+      schema: "orgId|lang";
+      requiresSession: true;
+      adapterSettings: {
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: undefined;
+    }>;
+
+    const getOrganizationInfo: Runner<{
+      methodName: "accounts.b2b.getOrganizationInfo";
+      settings: {
+      };
+      schema: "orgId|bpid";
+      requiresSession: true;
+      adapterSettings: {
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: undefined;
+    }>;
+
+    const setOrganizationContext: Runner<{
+      methodName: "accounts.b2b.setOrganizationContext";
+      settings: {
+      };
+      schema: "bpid";
+      requiresSession: true;
+      adapterSettings: {
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: undefined;
+    }>;
+
+    const getOrganizationContext: Runner<{
+      methodName: "accounts.b2b.getOrganizationContext";
+      settings: {
+      };
+      schema: "";
+      requiresSession: true;
+      adapterSettings: {
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: undefined;
+    }>;
+
+    module 'auth' {
+      const getAssets: Runner<{
+        methodName: "accounts.b2b.auth.getAssets";
+        settings: {
+        };
+        schema: "appId|bpid|orgId|includePolicies|environments";
+        requiresSession: true;
+        adapterSettings: {
+          forceHttps: true;
+          requiresSession: any;
+        };
+        altSessionParams: undefined;
+      }>;
+
+    }
+
+  }
+
+  module 'suggestions' {
+    const get: Runner<{
+      methodName: "accounts.address.suggestions.get";
+      settings: {
+      };
+      schema: "address|country|apiKey|suggestionreply|longitude|latitude";
+      requiresSession: undefined;
+      adapterSettings: {
+        forcePost: true;
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: undefined;
+    }>;
+
+  }
+
+  module 'sso' {
+    const login: Runner<{
+      methodName: "accounts.sso.login";
+      settings: {
+        oauth: true;
+      };
+      schema: "redirectURL|state|authFlow|context|useChildContext";
+      requiresSession: false;
+      adapterSettings: {
+        oauthMode: number;
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: undefined;
+    }>;
+
+  }
+
+  module 'tfa' {
+    const getProviders: Runner<{
+      methodName: "accounts.tfa.getProviders";
+      settings: {
+      };
+      schema: "regToken";
+      requiresSession: true;
+      adapterSettings: {
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: "regToken";
+    }>;
+
+    const initTFA: Runner<{
+      methodName: "accounts.tfa.initTFA";
+      settings: {
+      };
+      schema: "provider|mode|regToken";
+      requiresSession: false;
+      adapterSettings: {
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: undefined;
+    }>;
+
+    const finalizeTFA: Runner<{
+      methodName: "accounts.tfa.finalizeTFA";
+      settings: {
+      };
+      schema: "gigyaAssertion|providerAssertion|tempDevice|regToken";
+      requiresSession: true;
+      adapterSettings: {
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: "regToken";
+    }>;
+
+    const deactivateProvider: Runner<{
+      methodName: "accounts.tfa.deactivateProvider";
+      settings: {
+      };
+      schema: "provider";
+      requiresSession: true;
+      adapterSettings: {
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: undefined;
+    }>;
+
+    const unregisterDevice: Runner<{
+      methodName: "accounts.tfa.unregisterDevice";
+      settings: {
+      };
+      schema: "allDevices";
+      requiresSession: true;
+      adapterSettings: {
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: undefined;
+    }>;
+
+    module 'backupcodes' {
+      const get: Runner<{
+        methodName: "accounts.tfa.backupcodes.get";
+        settings: {
+        };
+        schema: "gigyaAssertion";
+        requiresSession: true;
+        adapterSettings: {
+          forceHttps: true;
+          requiresSession: any;
+        };
+        altSessionParams: undefined;
+      }>;
+
+      const create: Runner<{
+        methodName: "accounts.tfa.backupcodes.create";
+        settings: {
+        };
+        schema: "gigyaAssertion";
+        requiresSession: true;
+        adapterSettings: {
+          forceHttps: true;
+          requiresSession: any;
+        };
+        altSessionParams: undefined;
+      }>;
+
+      const verify: Runner<{
+        methodName: "accounts.tfa.backupcodes.verify";
+        settings: {
+        };
+        schema: "gigyaAssertion|code|regToken";
+        requiresSession: false;
+        adapterSettings: {
+          forceHttps: true;
+          requiresSession: any;
+        };
+        altSessionParams: undefined;
+      }>;
+
+    }
+
+    module 'phone' {
+      const getRegisteredPhoneNumbers: Runner<{
+        methodName: "accounts.tfa.phone.getRegisteredPhoneNumbers";
+        settings: {
+          preprocessor: any;
+        };
+        schema: "gigyaAssertion";
+        requiresSession: false;
+        adapterSettings: {
+          forceHttps: true;
+          requiresSession: any;
+        };
+        altSessionParams: undefined;
+      }>;
+
+      const removePhone: Runner<{
+        methodName: "accounts.tfa.phone.removePhone";
+        settings: {
+        };
+        schema: "gigyaAssertion|phoneId";
+        requiresSession: false;
+        adapterSettings: {
+          forceHttps: true;
+          requiresSession: any;
+        };
+        altSessionParams: undefined;
+      }>;
+
+      const sendVerificationCode: Runner<{
+        methodName: "accounts.tfa.phone.sendVerificationCode";
+        settings: {
+        };
+        schema: "gigyaAssertion|lang|phoneID|phone|method|regToken";
+        requiresSession: false;
+        adapterSettings: {
+          forceHttps: true;
+          requiresSession: any;
+        };
+        altSessionParams: undefined;
+      }>;
+
+      const completeVerification: Runner<{
+        methodName: "accounts.tfa.phone.completeVerification";
+        settings: {
+        };
+        schema: "gigyaAssertion|phvToken|code|regToken";
+        requiresSession: false;
+        adapterSettings: {
+          forceHttps: true;
+          requiresSession: any;
+        };
+        altSessionParams: undefined;
+      }>;
+
+    }
+
+    module 'email' {
+      const getEmails: Runner<{
+        methodName: "accounts.tfa.email.getEmails";
+        settings: {
+          preprocessor: any;
+        };
+        schema: "gigyaAssertion";
+        requiresSession: false;
+        adapterSettings: {
+          forceHttps: true;
+          requiresSession: any;
+        };
+        altSessionParams: undefined;
+      }>;
+
+      const sendVerificationCode: Runner<{
+        methodName: "accounts.tfa.email.sendVerificationCode";
+        settings: {
+        };
+        schema: "emailID|gigyaAssertion|lang|regToken";
+        requiresSession: false;
+        adapterSettings: {
+          forceHttps: true;
+          requiresSession: any;
+        };
+        altSessionParams: undefined;
+      }>;
+
+      const completeVerification: Runner<{
+        methodName: "accounts.tfa.email.completeVerification";
+        settings: {
+        };
+        schema: "gigyaAssertion|phvToken|code|regToken";
+        requiresSession: false;
+        adapterSettings: {
+          forceHttps: true;
+          requiresSession: any;
+        };
+        altSessionParams: undefined;
+      }>;
+
+    }
+
+    module 'totp' {
+      const register: Runner<{
+        methodName: "accounts.tfa.totp.register";
+        settings: {
+        };
+        schema: "gigyaAssertion|includeSecret";
+        requiresSession: false;
+        adapterSettings: {
+          forceHttps: true;
+          requiresSession: any;
+        };
+        altSessionParams: undefined;
+      }>;
+
+      const verify: Runner<{
+        methodName: "accounts.tfa.totp.verify";
+        settings: {
+        };
+        schema: "gigyaAssertion|sctToken|code|name|regToken";
+        requiresSession: false;
+        adapterSettings: {
+          forceHttps: true;
+          requiresSession: any;
+        };
+        altSessionParams: undefined;
+      }>;
+
+      const getRegistered: Runner<{
+        methodName: "accounts.tfa.totp.getRegistered";
+        settings: {
+          preprocessor: any;
+        };
+        schema: "gigyaAssertion";
+        requiresSession: false;
+        adapterSettings: {
+          forceHttps: true;
+          requiresSession: any;
+        };
+        altSessionParams: undefined;
+      }>;
+
+      const remove: Runner<{
+        methodName: "accounts.tfa.totp.remove";
+        settings: {
+        };
+        schema: "gigyaAssertion|id";
+        requiresSession: false;
+        adapterSettings: {
+          forceHttps: true;
+          requiresSession: any;
+        };
+        altSessionParams: undefined;
+      }>;
+
+    }
+
+    module 'push' {
+      const isVerified: Runner<{
+        methodName: "accounts.tfa.push.isVerified";
+        settings: {
+        };
+        schema: "gigyaAssertion|regToken";
+        requiresSession: false;
+        adapterSettings: {
+          forceHttps: true;
+          requiresSession: any;
+        };
+        altSessionParams: undefined;
+      }>;
+
+      const sendVerification: Runner<{
+        methodName: "accounts.tfa.push.sendVerification";
+        settings: {
+        };
+        schema: "gigyaAssertion|regToken";
+        requiresSession: false;
+        adapterSettings: {
+          forceHttps: true;
+          requiresSession: any;
+        };
+        altSessionParams: undefined;
+      }>;
+
+    }
+
+  }
+
+  module 'backupcodes' {
+    const get: Runner<{
+      methodName: "accounts.tfa.backupcodes.get";
+      settings: {
+      };
+      schema: "gigyaAssertion";
+      requiresSession: true;
+      adapterSettings: {
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: undefined;
+    }>;
+
+    const create: Runner<{
+      methodName: "accounts.tfa.backupcodes.create";
+      settings: {
+      };
+      schema: "gigyaAssertion";
+      requiresSession: true;
+      adapterSettings: {
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: undefined;
+    }>;
+
+    const verify: Runner<{
+      methodName: "accounts.tfa.backupcodes.verify";
+      settings: {
+      };
+      schema: "gigyaAssertion|code|regToken";
+      requiresSession: false;
+      adapterSettings: {
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: undefined;
+    }>;
+
+  }
+
+  module 'phone' {
+    const getRegisteredPhoneNumbers: Runner<{
+      methodName: "accounts.tfa.phone.getRegisteredPhoneNumbers";
+      settings: {
+        preprocessor: any;
+      };
+      schema: "gigyaAssertion";
+      requiresSession: false;
+      adapterSettings: {
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: undefined;
+    }>;
+
+    const removePhone: Runner<{
+      methodName: "accounts.tfa.phone.removePhone";
+      settings: {
+      };
+      schema: "gigyaAssertion|phoneId";
+      requiresSession: false;
+      adapterSettings: {
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: undefined;
+    }>;
+
+    const sendVerificationCode: Runner<{
+      methodName: "accounts.tfa.phone.sendVerificationCode";
+      settings: {
+      };
+      schema: "gigyaAssertion|lang|phoneID|phone|method|regToken";
+      requiresSession: false;
+      adapterSettings: {
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: undefined;
+    }>;
+
+    const completeVerification: Runner<{
+      methodName: "accounts.tfa.phone.completeVerification";
+      settings: {
+      };
+      schema: "gigyaAssertion|phvToken|code|regToken";
+      requiresSession: false;
+      adapterSettings: {
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: undefined;
+    }>;
+
+  }
+
+  module 'email' {
+    const getEmails: Runner<{
+      methodName: "accounts.tfa.email.getEmails";
+      settings: {
+        preprocessor: any;
+      };
+      schema: "gigyaAssertion";
+      requiresSession: false;
+      adapterSettings: {
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: undefined;
+    }>;
+
+    const sendVerificationCode: Runner<{
+      methodName: "accounts.tfa.email.sendVerificationCode";
+      settings: {
+      };
+      schema: "emailID|gigyaAssertion|lang|regToken";
+      requiresSession: false;
+      adapterSettings: {
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: undefined;
+    }>;
+
+    const completeVerification: Runner<{
+      methodName: "accounts.tfa.email.completeVerification";
+      settings: {
+      };
+      schema: "gigyaAssertion|phvToken|code|regToken";
+      requiresSession: false;
+      adapterSettings: {
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: undefined;
+    }>;
+
+  }
+
+  module 'totp' {
+    const register: Runner<{
+      methodName: "accounts.tfa.totp.register";
+      settings: {
+      };
+      schema: "gigyaAssertion|includeSecret";
+      requiresSession: false;
+      adapterSettings: {
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: undefined;
+    }>;
+
+    const verify: Runner<{
+      methodName: "accounts.tfa.totp.verify";
+      settings: {
+      };
+      schema: "gigyaAssertion|sctToken|code|name|regToken";
+      requiresSession: false;
+      adapterSettings: {
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: undefined;
+    }>;
+
+    const getRegistered: Runner<{
+      methodName: "accounts.tfa.totp.getRegistered";
+      settings: {
+        preprocessor: any;
+      };
+      schema: "gigyaAssertion";
+      requiresSession: false;
+      adapterSettings: {
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: undefined;
+    }>;
+
+    const remove: Runner<{
+      methodName: "accounts.tfa.totp.remove";
+      settings: {
+      };
+      schema: "gigyaAssertion|id";
+      requiresSession: false;
+      adapterSettings: {
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: undefined;
+    }>;
+
+  }
+
+  module 'push' {
+    const isVerified: Runner<{
+      methodName: "accounts.tfa.push.isVerified";
+      settings: {
+      };
+      schema: "gigyaAssertion|regToken";
+      requiresSession: false;
+      adapterSettings: {
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: undefined;
+    }>;
+
+    const sendVerification: Runner<{
+      methodName: "accounts.tfa.push.sendVerification";
+      settings: {
+      };
+      schema: "gigyaAssertion|regToken";
+      requiresSession: false;
+      adapterSettings: {
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: undefined;
+    }>;
+
+  }
+
+  module 'auth' {
+    const getAssets: Runner<{
+      methodName: "accounts.b2b.auth.getAssets";
+      settings: {
+      };
+      schema: "appId|bpid|orgId|includePolicies|environments";
+      requiresSession: true;
+      adapterSettings: {
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: undefined;
+    }>;
+
+  }
+
+  module 'groups' {
+    const getSchema: Runner<{
+      methodName: "accounts.groups.getSchema";
+      settings: {
+      };
+      schema: "model";
+      requiresSession: true;
+      adapterSettings: {
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: undefined;
+    }>;
+
+    const registerGroup: Runner<{
+      methodName: "accounts.groups.registerGroup";
+      settings: {
+      };
+      schema: "model|groupId|groupData";
+      requiresSession: true;
+      adapterSettings: {
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: undefined;
+    }>;
+
+    const setGroupInfo: Runner<{
+      methodName: "accounts.groups.setGroupInfo";
+      settings: {
+      };
+      schema: "model|groupId|groupData";
+      requiresSession: true;
+      adapterSettings: {
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: undefined;
+    }>;
+
+    const getGroupInfo: Runner<{
+      methodName: "accounts.groups.getGroupInfo";
+      settings: {
+      };
+      schema: "model|groupId";
+      requiresSession: true;
+      adapterSettings: {
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: undefined;
+    }>;
+
+    const deleteGroup: Runner<{
+      methodName: "accounts.groups.deleteGroup";
+      settings: {
+      };
+      schema: "model|groupId";
+      requiresSession: true;
+      adapterSettings: {
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: undefined;
+    }>;
+
+    const setGroupMemberInfo: Runner<{
+      methodName: "accounts.groups.setGroupMemberInfo";
+      settings: {
+      };
+      schema: "model|groupId|uid|relationshipData|permissions";
+      requiresSession: true;
+      adapterSettings: {
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: undefined;
+    }>;
+
+    const getGroupMemberInfo: Runner<{
+      methodName: "accounts.groups.getGroupMemberInfo";
+      settings: {
+      };
+      schema: "model|groupId|uid|include";
+      requiresSession: true;
+      adapterSettings: {
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: undefined;
+    }>;
+
+    const removeMember: Runner<{
+      methodName: "accounts.groups.removeMember";
+      settings: {
+      };
+      schema: "model|groupId|uid";
+      requiresSession: true;
+      adapterSettings: {
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: undefined;
+    }>;
+
+    const getAllMemberGroups: Runner<{
+      methodName: "accounts.groups.getAllMemberGroups";
+      settings: {
+      };
+      schema: "uid|flatNestedFields";
+      requiresSession: true;
+      adapterSettings: {
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: undefined;
+    }>;
+
+    const searchGroupMembers: Runner<{
+      methodName: "accounts.groups.searchGroupMembers";
+      settings: {
+      };
+      schema: "model|groupId|limit|start";
+      requiresSession: true;
+      adapterSettings: {
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: undefined;
+    }>;
+
+    const createInvitation: Runner<{
+      methodName: "accounts.groups.createInvitation";
+      settings: {
+      };
+      schema: "model|groupId|isOneTime";
+      requiresSession: true;
+      adapterSettings: {
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: undefined;
+    }>;
+
+    const invitationConfirm: Runner<{
+      methodName: "accounts.groups.invitationConfirm";
+      settings: {
+      };
+      schema: "invitationId";
+      requiresSession: false;
+      adapterSettings: {
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: undefined;
+    }>;
+
+    const finalizeInvitation: Runner<{
+      methodName: "accounts.groups.finalizeInvitation";
+      settings: {
+      };
+      schema: "token";
+      requiresSession: true;
+      adapterSettings: {
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: undefined;
+    }>;
+
+  }
+
+  module 'otp' {
+    const sendCode: Runner<{
+      methodName: "accounts.otp.sendCode";
+      settings: {
+        riskAssessment: true;
+        preprocessor: any;
+      };
+      schema: "regToken|phoneNumber|email|lang|captchaToken|captchaType|blackBoxToken|dataCenter|phvToken";
+      requiresSession: false;
+      adapterSettings: {
+        forcePost: true;
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: undefined;
+    }>;
+
+    const login: Runner<{
+      methodName: "accounts.otp.login";
+      settings: {
+      };
+      schema: "vToken|code|targetEnv|includeUserInfo|include|regSource|sessionExpiration";
+      requiresSession: false;
+      adapterSettings: {
+        forcePost: true;
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: undefined;
+    }>;
+
+    const update: Runner<{
+      methodName: "accounts.otp.update";
+      settings: {
+      };
+      schema: "vToken|code|regToken";
+      requiresSession: false;
+      adapterSettings: {
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: undefined;
+    }>;
+
+  }
+
+  module 'auth' {
+    const guest: Runner<{
+      methodName: "accounts.auth.guest";
+      settings: {
+      };
+      schema: "identifier|identifierType";
+      requiresSession: false;
+      adapterSettings: {
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: undefined;
+    }>;
+
+    const getMethods: Runner<{
+      methodName: "accounts.auth.getMethods";
+      settings: {
+      };
+      schema: "identifier|aToken";
+      requiresSession: false;
+      adapterSettings: {
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: undefined;
+    }>;
+
+    const login: Runner<{
+      methodName: "accounts.auth.login";
+      settings: {
+      };
+      schema: "accessToken|sessionExpiration|targetEnv|include|includeUserInfo|loginMode|lang";
+      requiresSession: false;
+      adapterSettings: {
+        clearSessionCondition: any;
+        forcePost: true;
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: undefined;
+    }>;
+
+    module 'otp' {
+      const verify: Runner<{
+        methodName: "accounts.auth.otp.verify";
+        settings: {
+        };
+        schema: "vToken|code";
+        requiresSession: false;
+        adapterSettings: {
+          forceHttps: true;
+          requiresSession: any;
+        };
+        altSessionParams: undefined;
+      }>;
+
+      const authenticate: Runner<{
+        methodName: "accounts.auth.otp.authenticate";
+        settings: {
+        };
+        schema: "vToken|code";
+        requiresSession: false;
+        adapterSettings: {
+          forceHttps: true;
+          requiresSession: any;
+        };
+        altSessionParams: undefined;
+      }>;
+
+      module 'email' {
+        const sendCode: Runner<{
+          methodName: "accounts.auth.otp.email.sendCode";
+          settings: {
+          };
+          schema: "email|lang";
+          requiresSession: false;
+          adapterSettings: {
+            forceHttps: true;
+            requiresSession: any;
+          };
+          altSessionParams: undefined;
+        }>;
+
+        const login: Runner<{
+          methodName: "accounts.auth.otp.email.login";
+          settings: {
+          };
+          schema: "code|vToken|targetEnv|includeUserInfo|include|regSource|sessionExpiration";
+          requiresSession: false;
+          adapterSettings: {
+            forcePost: true;
+            forceHttps: true;
+            requiresSession: any;
+          };
+          altSessionParams: undefined;
+        }>;
+
+      }
+
+    }
+
+    module 'push' {
+      const sendVerification: Runner<{
+        methodName: "accounts.auth.push.sendVerification";
+        settings: {
+        };
+        schema: "identifier";
+        requiresSession: false;
+        adapterSettings: {
+          forceHttps: true;
+          requiresSession: any;
+        };
+        altSessionParams: undefined;
+      }>;
+
+      const isVerified: Runner<{
+        methodName: "accounts.auth.push.isVerified";
+        settings: {
+        };
+        schema: "vToken";
+        requiresSession: false;
+        adapterSettings: {
+          forceHttps: true;
+          requiresSession: any;
+        };
+        altSessionParams: undefined;
+      }>;
+
+    }
+
+    module 'fido' {
+      const initRegisterCredentials: Runner<{
+        methodName: "accounts.auth.fido.initRegisterCredentials";
+        settings: {
+          preprocessor: any;
+        };
+        schema: "regToken|aToken";
+        requiresSession: true;
+        adapterSettings: {
+          clearSessionCondition: any;
+          forceHttps: true;
+          requiresSession: any;
+        };
+        altSessionParams: "regToken|aToken";
+      }>;
+
+      const registerCredentials: Runner<{
+        methodName: "accounts.auth.fido.registerCredentials";
+        settings: {
+          preprocessor: any;
+        };
+        schema: "token|attestation|deviceName|regToken";
+        requiresSession: false;
+        adapterSettings: {
+          forceHttps: true;
+          requiresSession: any;
+        };
+        altSessionParams: undefined;
+      }>;
+
+      const getAssertionOptions: Runner<{
+        methodName: "accounts.auth.fido.getAssertionOptions";
+        settings: {
+        };
+        schema: "";
+        requiresSession: false;
+        adapterSettings: {
+          forceHttps: true;
+          requiresSession: any;
+        };
+        altSessionParams: undefined;
+      }>;
+
+      const verifyAssertion: Runner<{
+        methodName: "accounts.auth.fido.verifyAssertion";
+        settings: {
+        };
+        schema: "token|authenticatorAssertion";
+        requiresSession: false;
+        adapterSettings: {
+          forceHttps: true;
+          requiresSession: any;
+        };
+        altSessionParams: undefined;
+      }>;
+
+      const getCredentials: Runner<{
+        methodName: "accounts.auth.fido.getCredentials";
+        settings: {
+          preprocessor: any;
+        };
+        schema: "regToken";
+        requiresSession: true;
+        adapterSettings: {
+          forceHttps: true;
+          requiresSession: any;
+        };
+        altSessionParams: "regToken";
+      }>;
+
+      const removeCredential: Runner<{
+        methodName: "accounts.auth.fido.removeCredential";
+        settings: {
+          preprocessor: any;
+        };
+        schema: "credentialId|regToken";
+        requiresSession: true;
+        adapterSettings: {
+          forceHttps: true;
+          requiresSession: any;
+        };
+        altSessionParams: "regToken";
+      }>;
+
+    }
+
+  }
+
+  module 'otp' {
+    const verify: Runner<{
+      methodName: "accounts.auth.otp.verify";
+      settings: {
+      };
+      schema: "vToken|code";
+      requiresSession: false;
+      adapterSettings: {
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: undefined;
+    }>;
+
+    const authenticate: Runner<{
+      methodName: "accounts.auth.otp.authenticate";
+      settings: {
+      };
+      schema: "vToken|code";
+      requiresSession: false;
+      adapterSettings: {
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: undefined;
+    }>;
+
+    module 'email' {
+      const sendCode: Runner<{
+        methodName: "accounts.auth.otp.email.sendCode";
+        settings: {
+        };
+        schema: "email|lang";
+        requiresSession: false;
+        adapterSettings: {
+          forceHttps: true;
+          requiresSession: any;
+        };
+        altSessionParams: undefined;
+      }>;
+
+      const login: Runner<{
+        methodName: "accounts.auth.otp.email.login";
+        settings: {
+        };
+        schema: "code|vToken|targetEnv|includeUserInfo|include|regSource|sessionExpiration";
+        requiresSession: false;
+        adapterSettings: {
+          forcePost: true;
+          forceHttps: true;
+          requiresSession: any;
+        };
+        altSessionParams: undefined;
+      }>;
+
+    }
+
+  }
+
+  module 'push' {
+    const sendVerification: Runner<{
+      methodName: "accounts.auth.push.sendVerification";
+      settings: {
+      };
+      schema: "identifier";
+      requiresSession: false;
+      adapterSettings: {
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: undefined;
+    }>;
+
+    const isVerified: Runner<{
+      methodName: "accounts.auth.push.isVerified";
+      settings: {
+      };
+      schema: "vToken";
+      requiresSession: false;
+      adapterSettings: {
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: undefined;
+    }>;
+
+  }
+
+  module 'email' {
+    const send: Runner<{
+      methodName: "accounts.auth.magiclink.email.send";
+      settings: {
+      };
+      schema: "email|context|lang";
+      requiresSession: false;
+      adapterSettings: {
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: undefined;
+    }>;
+
+    const login: Runner<{
+      methodName: "accounts.auth.magiclink.email.login";
+      settings: {
+      };
+      schema: "vToken|code|targetEnv|includeUserInfo|include|regSource|sessionExpiration";
+      requiresSession: false;
+      adapterSettings: {
+        forcePost: true;
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: undefined;
+    }>;
+
+  }
+
+  module 'email' {
+    const sendCode: Runner<{
+      methodName: "accounts.auth.otp.email.sendCode";
+      settings: {
+      };
+      schema: "email|lang";
+      requiresSession: false;
+      adapterSettings: {
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: undefined;
+    }>;
+
+    const login: Runner<{
+      methodName: "accounts.auth.otp.email.login";
+      settings: {
+      };
+      schema: "code|vToken|targetEnv|includeUserInfo|include|regSource|sessionExpiration";
+      requiresSession: false;
+      adapterSettings: {
+        forcePost: true;
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: undefined;
+    }>;
+
+  }
+
+  module 'identifier' {
+    const createToken: Runner<{
+      methodName: "accounts.identifier.createToken";
+      settings: {
+      };
+      schema: "identifier|identifierType";
+      requiresSession: false;
+      adapterSettings: {
+        forcePost: true;
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: undefined;
+    }>;
+
+  }
+
+  module 'identity' {
+    const authorize: Runner<{
+      methodName: "accounts.identity.authorize";
+      settings: {
+      };
+      schema: "authorization_details|grant_type";
+      requiresSession: false;
+      adapterSettings: {
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: undefined;
+    }>;
+
+  }
+
+  module 'fido' {
+    const initRegisterCredentials: Runner<{
+      methodName: "accounts.auth.fido.initRegisterCredentials";
+      settings: {
+        preprocessor: any;
+      };
+      schema: "regToken|aToken";
+      requiresSession: true;
+      adapterSettings: {
+        clearSessionCondition: any;
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: "regToken|aToken";
+    }>;
+
+    const registerCredentials: Runner<{
+      methodName: "accounts.auth.fido.registerCredentials";
+      settings: {
+        preprocessor: any;
+      };
+      schema: "token|attestation|deviceName|regToken";
+      requiresSession: false;
+      adapterSettings: {
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: undefined;
+    }>;
+
+    const getAssertionOptions: Runner<{
+      methodName: "accounts.auth.fido.getAssertionOptions";
+      settings: {
+      };
+      schema: "";
+      requiresSession: false;
+      adapterSettings: {
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: undefined;
+    }>;
+
+    const verifyAssertion: Runner<{
+      methodName: "accounts.auth.fido.verifyAssertion";
+      settings: {
+      };
+      schema: "token|authenticatorAssertion";
+      requiresSession: false;
+      adapterSettings: {
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: undefined;
+    }>;
+
+    const getCredentials: Runner<{
+      methodName: "accounts.auth.fido.getCredentials";
+      settings: {
+        preprocessor: any;
+      };
+      schema: "regToken";
+      requiresSession: true;
+      adapterSettings: {
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: "regToken";
+    }>;
+
+    const removeCredential: Runner<{
+      methodName: "accounts.auth.fido.removeCredential";
+      settings: {
+        preprocessor: any;
+      };
+      schema: "credentialId|regToken";
+      requiresSession: true;
+      adapterSettings: {
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: "regToken";
+    }>;
+
+  }
+
+  module 'session' {
+    const verify: Runner<{
+      methodName: "accounts.session.verify";
+      settings: {
+      };
+      schema: "";
+      requiresSession: true;
+      adapterSettings: {
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: undefined;
+    }>;
+
+  }
+
+  module 'oauth' {
+    const register: Runner<{
+      methodName: "oauth.register";
+      settings: {
+      };
+      schema: "lang|regSource|cid|context|sessionExpiration|userInfo|verifyToken|authMode";
+      requiresSession: false;
+      adapterSettings: {
+        forcePost: true;
+        useBearerToken: true;
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: undefined;
+    }>;
+
+    const connect: Runner<{
+      methodName: "oauth.connect";
+      settings: {
+        preprocessor: any;
+      };
+      schema: "regToken";
+      requiresSession: true;
+      adapterSettings: {
+        forcePost: true;
+        useBearerToken: true;
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: "regToken";
+    }>;
+
+    const disconnect: Runner<{
+      methodName: "oauth.disconnect";
+      settings: {
+        preprocessor: any;
+      };
+      schema: "regToken";
+      requiresSession: true;
+      adapterSettings: {
+        forcePost: true;
+        useBearerToken: true;
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: "regToken";
+    }>;
+
+    const authorize: Runner<{
+      methodName: "oauth.authorize";
+      settings: {
+      };
+      schema: "response_type|authMode";
+      requiresSession: false;
+      adapterSettings: {
+        forcePost: true;
+        useBearerToken: true;
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: undefined;
+    }>;
+
+    const token: Runner<{
+      methodName: "oauth.token";
+      settings: {
+      };
+      schema: "grant_type|code|targetEnv|sessionExpiration";
+      requiresSession: false;
+      adapterSettings: {
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: undefined;
+    }>;
+
+  }
+
+  module 'token' {
+    const authenticationContext: Runner<{
+      methodName: "auth.token.authenticationContext";
+      settings: {
+      };
+      schema: "regToken";
+      requiresSession: true;
+      adapterSettings: {
+        forcePost: true;
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: "regToken";
+    }>;
+
+  }
+
+  module 'ds' {
+    const store: Runner<{
+      methodName: "ds.store";
+      settings: {
+      };
+      schema: "type|data|oid|updateBehavior";
+      requiresSession: undefined;
+      adapterSettings: {
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: undefined;
+    }>;
+
+    const get: Runner<{
+      methodName: "ds.get";
+      settings: {
+      };
+      schema: "type|data|oid|fields";
+      requiresSession: undefined;
+      adapterSettings: {
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: undefined;
+    }>;
+
+    const search: Runner<{
+      methodName: "ds.search";
+      settings: {
+      };
+      schema: "expTime|querySig|query";
+      requiresSession: undefined;
+      adapterSettings: {
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: undefined;
+    }>;
+
+    const getSchema: Runner<{
+      methodName: "ds.getSchema";
+      settings: {
+      };
+      schema: "";
+      requiresSession: undefined;
+      adapterSettings: {
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: undefined;
+    }>;
+
+    const deleted: Runner<{
+      methodName: "ds.delete";
+      settings: {
+      };
+      schema: "type|oid|fields";
+      requiresSession: undefined;
+      adapterSettings: {
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: undefined;
+    }>;
+
+  }
+
+  module 'ids' {
+    const getAccountInfo: Runner<{
+      methodName: "ids.getAccountInfo";
+      settings: {
+      };
+      schema: "include|extraProfileFields";
+      requiresSession: true;
+      adapterSettings: {
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: undefined;
+    }>;
+
+    const setAccountInfo: Runner<{
+      methodName: "ids.setAccountInfo";
+      settings: {
+      };
+      schema: "profile|preferences|data|oldPassword|password|newPassword|addLoginEmails|removeLoginEmails|username|secretQuestion|secretAnswer|requirePasswordChange|lang";
+      requiresSession: false;
+      adapterSettings: {
+        forcePost: true;
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: undefined;
+    }>;
+
+    const search: Runner<{
+      methodName: "ids.search";
+      settings: {
+      };
+      schema: "expTime|querySig|query";
+      requiresSession: undefined;
+      adapterSettings: {
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: undefined;
+    }>;
+
+  }
+
+  module 'op' {
+    const deviceContinue: Runner<{
+      methodName: "fidm.oidc.op.deviceContinue";
+      settings: {
+        restUrl: "oidc/op/v1.0/{APIKey}/device_continue";
+      };
+      schema: "user_code";
+      requiresSession: true;
+      adapterSettings: {
+        namespace: "fidm";
+        forcePost: true;
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: undefined;
+    }>;
+
+    const getContextData: Runner<{
+      methodName: "fidm.oidc.op.getContextData";
+      settings: {
+        restUrl: "oidc/op/v1.0/{APIKey}/contextData";
+      };
+      schema: "oidc_context";
+      requiresSession: false;
+      adapterSettings: {
+        namespace: "fidm";
+        forcePost: false;
+        forceHttps: true;
+        requiresSession: any;
+      };
+      altSessionParams: undefined;
+    }>;
+
+  }
+
+  module 'accounts.address' {
+    module 'suggestions' {
+      const get: Runner<{
+        methodName: "accounts.address.suggestions.get";
+        settings: {
+        };
+        schema: "address|country|apiKey|suggestionreply|longitude|latitude";
+        requiresSession: undefined;
+        adapterSettings: {
+          forcePost: true;
+          forceHttps: true;
+          requiresSession: any;
+        };
+        altSessionParams: undefined;
+      }>;
+
+    }
+
+  }
+
+  module 'accounts.auth.magiclink' {
+    module 'email' {
+      const send: Runner<{
+        methodName: "accounts.auth.magiclink.email.send";
+        settings: {
+        };
+        schema: "email|context|lang";
+        requiresSession: false;
+        adapterSettings: {
+          forceHttps: true;
+          requiresSession: any;
+        };
+        altSessionParams: undefined;
+      }>;
+
+      const login: Runner<{
+        methodName: "accounts.auth.magiclink.email.login";
+        settings: {
+        };
+        schema: "vToken|code|targetEnv|includeUserInfo|include|regSource|sessionExpiration";
+        requiresSession: false;
+        adapterSettings: {
+          forcePost: true;
+          forceHttps: true;
+          requiresSession: any;
+        };
+        altSessionParams: undefined;
+      }>;
+
+    }
+
+  }
+
+  module 'auth' {
+    module 'token' {
+      const authenticationContext: Runner<{
+        methodName: "auth.token.authenticationContext";
+        settings: {
+        };
+        schema: "regToken";
+        requiresSession: true;
+        adapterSettings: {
+          forcePost: true;
+          forceHttps: true;
+          requiresSession: any;
+        };
+        altSessionParams: "regToken";
+      }>;
+
+    }
+
+  }
+
+  module 'fidm.oidc' {
+    module 'op' {
+      const deviceContinue: Runner<{
+        methodName: "fidm.oidc.op.deviceContinue";
+        settings: {
+          restUrl: "oidc/op/v1.0/{APIKey}/device_continue";
+        };
+        schema: "user_code";
+        requiresSession: true;
+        adapterSettings: {
+          namespace: "fidm";
+          forcePost: true;
+          forceHttps: true;
+          requiresSession: any;
+        };
+        altSessionParams: undefined;
+      }>;
+
+      const getContextData: Runner<{
+        methodName: "fidm.oidc.op.getContextData";
+        settings: {
+          restUrl: "oidc/op/v1.0/{APIKey}/contextData";
+        };
+        schema: "oidc_context";
+        requiresSession: false;
+        adapterSettings: {
+          namespace: "fidm";
+          forcePost: false;
+          forceHttps: true;
+          requiresSession: any;
+        };
+        altSessionParams: undefined;
+      }>;
+
+    }
+
+  }
+
 }
 
-// region globals
-declare let __gigyaConf: any;
-declare let onGigyaServiceReady: Function;
-declare let gapi: any;
-declare let FB: any;
-// endregion
+
+export default gigya;
