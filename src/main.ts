@@ -5,10 +5,10 @@ import viteLogo from '/vite.svg';
  setupGigyaProfileContainer,
  setupJwtContainer,
  setupProperties,
- setupLoginContainer, setupNavBar,
-} from '@gigya';
+ setupLoginContainer, setupNavBar  
+} from './views';
 import { gigyaService, GigyaState } from '@gigya/service';
- 
+ import   './gigya-screen/custom-registration-login';
 document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
   <div> 
   <header class="header">
@@ -25,6 +25,11 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
       </a>
       <h1>Gigya + Vite + TS</h1>
     </section>
+    
+    <screen-set screen-set="Custom-RegistrationLogin"></screen-set>
+    <custom-registration >
+        
+   </custom-registration>  
     <div class="hcontainer">
        <section class="container left" id="properties"></section>
        <div class="vcontainer container center">
@@ -57,3 +62,4 @@ setupProperties(document.querySelector<HTMLDivElement>('#properties')!);
 gigyaService.subscribe((state: GigyaState) => {
   console.log(state);
 });
+

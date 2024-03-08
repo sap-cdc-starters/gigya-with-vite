@@ -28,8 +28,8 @@
       "@auth": ["./src/auth/index"],
       "@google/*": ["./src/google/*"],
       "@google": ["./src/google/index"],
-      "@gigya/*": ["./src/gigya/*"],
-      "@gigya": ["./src/gigya/index"]
+      "@gigya/*": ["./src/gigya-service/*"],
+      "@gigya": ["./src/gigya-service/index"]
     }
   },
   "include": ["src/**/*"]
