@@ -247,14 +247,13 @@
 
 .gigya-screen.portrait div.gigya-tfa .gig-tfa-container .gig-tfa-button-container .gig-tfa-button, .gigya-screen.portrait div.gigya-tfa .gig-tfa-container .gig-tfa-button-container .gig-tfa-button-submit, .gigya-screen.portrait div.gigya-tfa .gig-tfa-container .gig-tfa-phone-edit-link, .gigya-screen.portrait div.gigya-tfa .gig-tfa-container .gigya-button.gig-tfa-phone-code-resend, .gigya-screen a.gigya-button,  input[type=button],  input[type=submit] {
     cursor: pointer;
-    width: 100%;
+    width: 80%;
     height: 43px;
     border-radius: 1.79px;
     border-color: #1371b9;
     box-shadow: 0 0 1px 0 rgba(0, 0, 0, .4);
     color: #fff;
     background-color: #0070f0;
-    -ms-flex-line-pack: center;
     align-content: center;
     text-align: center;
     font-size: 19px
@@ -1268,6 +1267,7 @@
     height: 100%;
     width: 100%;
     z-index: 99;
+    display: none;
 }
 
  
@@ -1302,6 +1302,7 @@ form:has(:invalid) :where(.gigya-composite-control-submit) {
 [popover] {
     font-size: 1.2rem;
     padding: 10px;
+
 
     /* Final state of the exit animation */
     opacity: 0;
@@ -1350,3 +1351,17 @@ form:has(:invalid) :where(.gigya-composite-control-submit) {
     }
 }
 
+input[type="submit"]  {
+    margin-top: 1rem;
+    padding: 0;
+}
+
+input[type="button"]  {
+    margin-top: 1rem;
+    padding: 0;
+}
+
+.gigya-auth-methods-form > input[type="submit"] {
+    border: 5px dashed green;
+    display: none;
+}

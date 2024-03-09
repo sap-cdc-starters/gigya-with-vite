@@ -98,9 +98,6 @@
   margin-bottom: 1.2rem 0;
 }
 
-input[type='checkbox'] {
-  display: none;
-}
 
 .lbl-toggle {
   position: fixed;

@@ -7,6 +7,7 @@ import viteLogo from '/vite.svg';
  setupProperties,
  setupLoginContainer, setupNavBar  
 } from './views';
+ import './gigya-screen/passwordless-registration';
 import { gigyaService, GigyaState } from '@gigya/service';
  import   './gigya-screen/custom-registration-login';
 document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
@@ -27,6 +28,8 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
     </section>
     
     <screen-set screen-set="Custom-RegistrationLogin"></screen-set>
+    <passwordless-registration  ></passwordless-registration>
+
     <custom-registration >
         
    </custom-registration>  

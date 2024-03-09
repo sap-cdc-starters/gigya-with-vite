@@ -37,8 +37,7 @@ const authMachine = createMachine<AuthContext, AuthEvent>(
     {
         id: 'gigya-login',
         initial: 'js.loading',
-        context: {},
-        
+        context: {}, 
          states: {
             ['js.loading']: {
                 entry: 'gigya.load',
@@ -150,12 +149,12 @@ const authMachine = createMachine<AuthContext, AuthEvent>(
                             containerID: e.container,
                             include: "id_token",
                             ...e,
-                            onError: function(event) {
-                                console.log('onError', event);
-                                return {
-                                    nextScreen: 'gigya-otp-screen'
-                                };
-                            },
+                            // onError: function(event) {
+                            //     console.log('onError', event);
+                            //     return {
+                            //         nextScreen: 'gigya-otp-screen'
+                            //     };
+                            // },
                     
                           
 
