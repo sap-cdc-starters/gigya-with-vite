@@ -127,7 +127,7 @@ export interface IHideEvent extends IBaseScreenSetEvent {
 
 export type BeforeValidationEventHandler = (e: IBeforeValidationEvent) => object | Promise<Object>;
 export type BeforeSubmitEventHandler = (e: IBeforeSubmitEvent) => void | boolean; // Return Value: The event handlerexport declare function may return "false" to cancel the submission.
-export type BeforeScreenLoadEventHandler = (e: IBeforeScreenLoadEvent) => void;
+export type BeforeScreenLoadEventHandler = (e: IBeforeScreenLoadEvent) => any;
 export type AfterScreenLoadEventHandler = (e: IAfterScreenLoadEvent) => void;
 export type FieldChangedEventHandler = (e: IOnFieldChangedEvent) => void;
 export type AfterValidationEventHandler = (e: IAfterValidationEvent) => void;
@@ -241,15 +241,17 @@ export type TranslationWrapper = {
     type IScreenSetParams = {
         context?: any;
         cid?: string;
-        onBeforeSubmit?: (e: any) => void;
-        onAfterSubmit?: (e: any) => void;
-        onSubmit?: (e: any) => void;
-        onAfterValidation?: (e: any) => void;
-        onBeforeValidation?: (e: any) => void;
-        onBeforeScreenLoad?: (e: any) => void;
-        onAfterScreenLoad?: (e: any) => void;
-        onFieldChanged?: (e: any) => void;
-        onHide?: (e: any) => void;
+        onError?: ErrorEventHandler;
+        onSubmit?: SubmitEventHandler;
+        onAfterSubmit?: AfterSubmitEventHandler;
+        onBeforeSubmit?: BeforeSubmitEventHandler;
+        onAfterScreenLoad?: AfterScreenLoadEventHandler;
+        onBeforeScreenLoad?: BeforeScreenLoadEventHandler;
+        onFieldChanged?: FieldChangedEventHandler;
+        onBeforeValidation?: BeforeValidationEventHandler;
+        onAfterValidation?: AfterValidationEventHandler;
+        onHide?: HideEventHandler;
+
         apiDomain?: string;
         regSource?: string;
         regToken?: string;
@@ -259,6 +261,7 @@ export type TranslationWrapper = {
         mobileScreenSet?: string;
         screenSet: string;
         startScreen?: string;
+        
         initialResponse?: IFormResponse;
         initialMethod?: string;
         remember?: boolean;
@@ -274,9 +277,137 @@ export type TranslationWrapper = {
         providerSessionInfo?: IProviderSessionInfo;
         containerID?: string;
         include?: string;
-        onError?: ErrorEventHandler
+         customLang?: { [key: string]: string };
      };
-    type IFormResponse = {
+
+ export interface IBaseObjectParam {
+     onError?: (e:IErrorEvent) => void;
+ }
+ export interface IModalDialogParams extends IBaseObjectParam {
+     newModal?: boolean;
+     dimDialogBackground?: boolean;
+
+     captionText?: string;
+
+     modalTemplate?: string;
+     modalCss?: string;
+     onModalClose?: (reason: CloseReasons) => void;
+     closeImage?: string;
+ }
+
+ export enum CloseReasons {
+     pendingError, // an unhandled pending error from the server not handled internally by the screenset
+     missing, // attempt to move to a screen set name that does not exists
+     finished, // screenSet flow finished (move to _finish screen or no more forms)
+     canceled, // screenSet flow canceled (by x in the dialog or by client script)
+     backButton, // mobile dialog is closed by back in the browser
+     canceledByParent, // used internally to parent child to close its child
+     skip, // screenSet flow finished due to _skip
+     error, // error from server before we have a screen to show them on,
+     cancel,// screenSet flow canceled(close the screen without finelizing pending processes)
+ }
+
+ export interface IDisposable {
+     dispose: () => void;
+     onDisposedEvent?: () => EventWrapper<() => void>;
+ }
+ declare class EventWrapper<T extends Function> {
+     private _handlers;
+
+     constructor(_handlers?: Array<T>);
+
+     add(handler: T): void;
+
+     remove(handler: T): void;
+ }
+ 
+
+ export interface IPlugin  extends IDisposable {
+     containerID: string;
+     start: () => void;
+     params: IBaseObjectParam;
+ }
+
+
+ export interface IPluginParams extends IModalDialogParams {
+     width?: string;
+     height?: string;
+
+     captionTextKey?: string;
+
+     instanceID?: string;
+     containerID?: string;
+     customLang?: { [key: string]: string };
+     lang?: string;
+     deviceType?: string;
+     responsive?: boolean;
+     dialogStyle?: string; // of PluginStyle
+
+     onLoad?: () => void;
+     getInstance?: (instance: IPlugin) => void;
+     _noInit?: boolean;
+     _allowMultipleInstances?: boolean;
+ }
+
+ 
+ export interface IMap<T> {
+     [key: string]: T;
+ }
+ export interface IPluginCSS extends IMap<string | undefined> {
+     modern_modal?: string;
+     legacy_modal?: string;
+
+     reset?: string;
+     global: string;
+     mobile?: string;
+     nonMobile?: string;
+
+     resetRtl?: string;
+     globalRtl?: string;
+     mobileRtl?: string;
+     nonMobileRtl?: string;
+ }
+
+ export interface IScreenSetTemplates extends IPluginTemplates {
+     captcha: string;
+     invisibleRecaptcha: string;
+     inlinedPasswordStrength: string;
+     passwordStrength_minimumRequirements: string;
+     passwordStrength: string;
+     passwordStrength_strengthMeter: string;
+     photoUpload_form: string;
+     photoUpload_ui: string;
+     screenSet: string;
+     screenSet_dialog: string;
+     consent: string;
+     communicationCheckbox: string;
+ }
+
+ export interface IPluginTemplates extends IMap<string | undefined> {
+     legacyModal?: string;
+     modal?: string;
+     modalCloseButton?: string;
+ }
+
+
+ export interface IScreenSetCSS extends IPluginCSS {
+     defaultCSS: string;
+     ie8Patch: string;
+     ie9Patch: string;
+ }
+
+ export interface IBaseScreenParams extends IPluginParams {
+     screenSet: string;
+ }
+
+ export interface ISwitchScreenParams extends IBaseScreenParams {
+     screen: string;
+ }
+
+ export interface IHideScreenSetParams extends IBaseScreenParams {
+ }
+
+ type IFormResponse = {
         response?: IFormResponse;
         regToken?: string;
         aToken?: string;
@@ -315,7 +446,6 @@ export type TranslationWrapper = {
         widget?: IFormWidget;
         isWarn?: boolean;
     };
-    type GSErrors = {};
     type ErrorType = {};
     type IFormInput = {
         isCaptcha: boolean;
@@ -468,6 +598,247 @@ export type BaseParams =  {
         string extends S ? string[] :
             S extends '' ? [] :
                 S extends `${infer T}${D}${infer U}` ? [T, ...Split<U, D>] : [S];
+ interface IGroupCloser {
+     end(): void;
+
+     endWhen(doneWhen: Promise<any> | (() => void | Promise<any>)): void;
+ }
+ export enum LogLevel {
+     disabled = 0,
+     debug = 1,
+     info = 2,
+     warn = 3,
+     error = 4,
+ }
+
+ export const enum ClientMuteLevel {
+     none = 0,
+     normal = 1,
+     all = 2,
+ }
+
+ export const enum LogTheme {
+     // noinspection JSUnusedGlobalSymbols
+     none = 0,
+     dark = 1,
+     light = 2,
+ }
+
+ const enum GSErrors {
+     // noinspection JSUnusedGlobalSymbols
+     OK = 0,
+     Data_Pending = 100001,
+     NETWORK_ERROR = 500026,
+     DATA_PENDING = 100001,
+     OPERATION_CANCELED = 200001,
+     PERMISSION_GRANTED = 200002,
+     PERMISSION_NOT_GRANTED = 200003,
+     REDIRECT = 200004,
+     NEW_USER = 200005,
+     OPERATION_DONE = 200006,
+     UPDATE_USER = 200007,
+     OK_WITH_ERRORS = 200008,
+     ACCOUNTS_LINKED = 200009,
+     OK_WITH_ERROR_LOGIN_IDENTIFIER_EXISTS = 200010,
+     ACCOUNT_PENDING_REGISTRATION = 206001,
+     ACCOUNT_PENDING_VERIFICATION = 206002,
+     ACCOUNT_MISSING_LOGINID = 206003,
+     IDENTITY_ALREADY_ASSIGNED = 206004,
+     AFTER_EMAIL_VERIFICATION = 206005,
+     PENDING_CODE_VERIFICATION = 206006,
+     CLIENT_LOG = 300001,
+     INVALID_DATA_CENTER = 301001,
+     INVALID_REQUEST_FORMAT = 400001,
+     MISSING_REQUIRED_PARAMETER = 400002,
+     UNIQUE_IDENTIFIER_EXISTS = 400003,
+     INVALID_PARAMETER_FORMAT = 400004,
+     INVALID_PARAMETER_VALUE = 400006,
+     DUPLICATE_VALUE = 400007,
+     INVALID_AUTHENTICATION_HEADER = 400008,
+     VALIDATION_ERROR = 400009,
+     INVALID_REDIRECT_URI = 400011,
+     INVALID_RESPONSE_TYPE = 400012,
+     UNSUPPORTED_GRANT_TYPE = 400013,
+     INVALID_GRANT = 400014,
+     CODE_EXPIRED = 400015,
+     SCHEMA_VALIDATION_FAILED = 400020,
+     CAPTCHA_VERIFICATION_FAILED = 400021,
+     UNIQUE_INDEX_VALIDATION_ERROR = 400022,
+     INVALID_TYPE_VALIDATION_ERROR = 400023,
+     DYNAMIC_FIELDS_VALIDATION_ERROR = 400024,
+     WRITE_ACCESS_VALIDATION_ERROR = 400025,
+     INVALID_FORMAT_VALIDATION_ERROR = 400026,
+     REQUIRED_VALUE_VALIDATION_ERROR = 400027,
+     EMAIL_NOT_VERIFIED = 400028,
+     SCHEMA_CONFLICT_ERROR = 400029,
+     OPERATION_NOT_ALLOWED = 400030,
+     SECURITY_VERIFICATION_FAILED = 400050,
+     INVALID_APIKEY_PARAMETER = 400093,
+     NOT_SUPPORTED = 400096,
+     UNSUPPORTED_USER_AGENT = 400097,
+     NO_PROVIDERS = 400100,
+     POPUP_BLOCKED = 400101,
+     INVALID_EVENT_HANDLER = 400102,
+     INVALID_CONTAINERID = 400103,
+     NOT_CONNECTED = 400106,
+     INVALID_SITE_DOMAIN = 400120,
+     PROVIDER_CONFIGURATION_ERROR = 400122,
+     LIMIT_REACHED = 400124,
+     FREQUENCY_LIMIT_REACHED = 400125,
+     INVALID_ACTION = 400126,
+     INSUFFICIENT_POINTS_TO_REDEEM = 400127,
+     SIGNATURE_TIMESTAMP_EXPIRED = 400128,
+     INVALID_POLICY_CONFIGURATION = 401000,
+     SUSPECTED_SPAM = 401010,
+     LOGIN_FAILED_CAPTCHA_REQUIRED = 401020,
+     LOGIN_FAILED_WRONG_CAPTCHA = 401021,
+     OLD_PASSWORD_USED = 401030,
+     FORBIDDEN = 403000,
+     INVALID_SESSION_TOKEN = 403001,
+     REQUEST_HAS_EXPIRED = 403002,
+     INVALID_REQUEST_SIGNATURE = 403003,
+     DUPLICATE_NONCE = 403004,
+     UNAUTHORIZED_USER = 403005,
+     SENSITIVE_DATA_SENT_OVER_HTTP = 403006,
+     PERMISSION_DENIED = 403007,
+     INVALID_OPENID_URL = 403008,
+     PROVIDER_SESSION_EXPIRED = 403009,
+     INVALID_SECRET = 403010,
+     SESSION_HAS_EXPIRED = 403011,
+     NO_VALID_SESSION = 403012,
+     UNVERIFIED_USER = 403013,
+     MISSING_REQUEST_REFERRER = 403015,
+     UNEXPECTED_PROVIDER_USER = 403017,
+     PERMISSION_NOT_REQUESTED = 403022,
+     NO_USER_PERMISSION = 403023,
+     PROVIDER_LIMIT_REACHED = 403024,
+     INVALID_TOKEN = 403025,
+     UNAUTHORIZED_ACCESS_ERROR = 403026,
+     DIFFERENT_USER_FOR_REAUTH = 403027,
+     SESSION_EXPIRED_RETRY = 403030,
+     APPROVED_BY_MODERATOR = 403031,
+     TOKEN_HAS_RENEWED = 403032,
+     NO_USER_COOKIE = 403035,
+     UNAUTHORIZED_PARTNER = 403036,
+     POST_DENIED = 403037,
+     NO_LOGIN_TICKET = 403040,
+     ACCOUNT_DISABLED = 403041,
+     INVALID_LOGINID = 403042,
+     LOGIN_IDENTIFIER_EXISTS = 403043,
+     UNDERAGE_USER = 403044,
+     INVALID_SITE_CONFIGURATION_ERROR = 403045,
+     LOGINID_DOES_NOT_EXIST = 403047,
+     API_RATE_LIMIT_EXCEEDED = 403048,
+     PENDING_PASSWORD_CHANGE = 403100,
+     ACCOUNT_PENDING_TFA_VERIFICATION = 403101,
+     ACCOUNT_PENDING_TFA_REGISTRATION = 403102,
+     ACCOUNT_PENDING_RECENT_LOGIN = 403110,
+     ACCOUNT_TEMPORARILY_LOCKED_OUT = 403120,
+     REDUNDANT_OPERATION = 403200,
+     INVALID_APPLICATION_ID = 403201,
+     NOT_FOUND = 404000,
+     FRIEND_NOT_FOUND = 404001,
+     CATEGORY_NOT_FOUND = 404002,
+     UID_NOT_FOUND = 404003,
+     RESOURCE_NOT_FOUND = 404004,
+     INVALID_API_METHOD = 405001,
+     IDENTITY_EXISTS = 409001,
+     GONE = 410000,
+     REQUEST_ENTITY_TOO_LARGE = 413001,
+     COMMENT_TEXT_TOO_LARGE = 413002,
+     OBJECT_TOO_LARGE = 413003,
+     PROFILE_PHOTO_TOO_LARGE = 413004,
+     REQUEST_URI_TOO_LONG = 414000,
+     MISSING_USER_PHOTO = 409010,
+     COUNTER_NOT_REGISTERED = 409011,
+     INVALID_GMID_TICKET = 409012,
+     SAML_MAPPED_ATTRIBUTE_NOT_FOUND = 409013,
+     SAML_CERTIFICATE_NOT_FOUND = 409014,
+     SAML_MESSAGE_NOT_FOUND = 409015,
+     GENERAL_SERVER_ERROR = 500001,
+     SERVER_LOGIN_ERROR = 500002,
+     DEFAULT_APPLICATION_CONFIGURATION_ERROR = 500003,
+     SESSION_MIGRATION_ERROR = 500014,
+     PROVIDER_ERROR = 500023,
+     DATABASE_ERROR = 500028,
+     USERNAME_REQUIRED = 500029,
+     NO_PROVIDER_APPLICATION = 500031,
+     LOAD_FAILED = 500032,
+     INVALID_ENVIRONMENT_CONFIG = 500033,
+     ERROR_DURING_BACKEND_OPERATION = 500034,
+     TIMEOUT = 504001,
+     CLIENTTIMEOUT = 504002,
+     INVALID_URL = 404004,
+     MEDIA_ITEMS_NOT_SUPPORTED = 401001,
+     MISSING_ERROR_CODE = 599999,
+     THIS_AUTHENTICATION_METHOD_IS_CURRENTLY_DISABLED = 403300,
+     FORCE_LINK_LOGIN_IDENTIFIER_EXISTS = 409003,
+ }
+
+ interface ILogger {
+     configKey: string;
+     isEnabled: boolean;
+
+     debug(message: string, details?: { [key: string]: any; }): void;
+
+     disable(): void;
+
+     enable(logLevel?: LogLevel, clientMuteLevel?: ClientMuteLevel, logTheme?: LogTheme): void;
+
+     error(message: string, details?: {
+         [key: string]: any;
+     }): void;
+
+     getConfig(): ILoggerConfig;
+
+     group(groupTitle: string, collapsed?: boolean): IGroupCloser;
+
+     groupEnd(groupTitle: string): void;
+
+     info(message: string, details?: { [key: string]: any; }): void;
+
+     report(message: string, details?: { [key: string]: any; }, includeStack?: boolean, forceReport?: boolean): void;
+
+     warn(message: string, details?: { [key: string]: any; }): void;
+ }
+
+ interface ILoggerConfig {
+     clientMuteLevel: ClientMuteLevel;
+     logLevel: LogLevel;
+     logTheme: LogTheme;
+ }
+ interface IElementActualSize {
+     height: number;
+     width: number;
+ }
+ export interface IViewportSize extends IElementActualSize {
+     orientation: number;
+ }
+
+ export interface Lang {
+     countryCode: string;
+     full: string;
+     langCode: string;
+     originalLang: string;
+ }
+
+ export interface IEventData {
+     workflowDefinitionId: string;
+     eventName: string;
+     data?: any;
+ }
+ // endregion
+
+ // region types
+ export type ILogFunc = (message: string, details?: {
+     [key: string]: any;
+ }) => void;
+ // endregion
+
+ // region functions
+ export declare function loggerJsonp(endpoint: string, params: string): void;
+
+ export declare const     logger: ILogger
 
  export namespace accounts {
    export declare function socialLogin(args?: APIParams<{
@@ -518,6 +889,7 @@ export declare function initHostedPage(args?: APIParams<{
     };
 }>): void;
 export declare function showScreenSet(params: IScreenSetParams) :void;
+export declare function switchScreen(args?: ISwitchScreenParams): void;
 export declare function login(args?: APIParams<{
     methodName: "accounts.login";
     settings: {
@@ -686,7 +1058,7 @@ export declare function isAvailableLoginID(args?: APIParams<{
         requiresSession: any;
     };
     altSessionParams: undefined;
-}>): void;
+}>): {isAvailable: boolean};
 export declare function resendVerificationCode(args?: APIParams<{
     methodName: "accounts.resendVerificationCode";
     settings: {
@@ -1777,7 +2149,7 @@ export namespace session {
 
 }
 export namespace socialize {
-    export declare function addEventHandlers(param: { onLogin: (event: ILoginEvent) => void; onLogout: (event:ILogoutEvent) => void , [event:string]: <TEvent extends  ILoginEvent>(event: TEvent) => void }) : void;
+    export declare function addEventHandlers(param: { [event:string]: <TEvent extends  IBaseEvent>(event: TEvent) => void } & { onLogin?: (event: ILoginEvent) => void; onLogout?: (event:ILogoutEvent) => void }) : void;
 
     
 export declare function login(args?: APIParams<{

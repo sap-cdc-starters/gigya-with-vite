@@ -17,7 +17,7 @@ export function setupProperties(element: HTMLDivElement) {
     setupContent(element.querySelector('.content-inner') as HTMLDivElement);
       function setupContent(element: HTMLDivElement) {
         let elements = [] as GigyaState[];
-
+        
         gigyaService.subscribe((state) => {
             elements.push(state);
 

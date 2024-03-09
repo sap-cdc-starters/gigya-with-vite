@@ -4,8 +4,9 @@ const style= `
 :host {
   width: 100% ;
   height: 100%;
-
+    display: flex;
 }
+ 
     input {
         width: 100%;
         height: 100%;
@@ -76,18 +77,25 @@ const style= `
     text-align: center;
     font-size: 19px
 }
+
 ${css}`
   
 const template = document.createElement('template');
-template.innerHTML = ` 
+template.innerHTML = `
+<!-- <div class="gigya-composite-control gigya-composite-control-textbox" style="display: block;">-->
+<!--    <input  type="text" value="" name="code" data-required="true" autocomplete="off" class="gigya-input-text" formnovalidate="formnovalidate" tabindex="0" data-gigya-type="text"  data-gigya-placeholder="Enter the code sent to your email"  aria-label="Code">-->
+<!--    <span class="gigya-error-msg" data-bound-to="code"></span>-->
+<!--</div>-->
+
 <div class="gigya-composite-control gigya-composite-control-textbox">
-    <input type="text"  name="identifier"  required width="100%" height="100%">
-</div>
+    <input  type="text" value="" name="identifier" data-required="true" autocomplete="email" class="gigya-input-text" formnovalidate="formnovalidate" tabindex="0" data-gigya-type="text"  data-gigya-placeholder="Email"  aria-label="Email">
+     <span class="gigya-error-msg" data-bound-to="identifier"></span> 
+ </div>
 <style>
 
 </style>
 
-   <div class="portrait" popover id="popver-email" >
+   <div class="portrait" popover="manual" id="popver-email" >
     <form class="gigya-otp-update-form" id="otp-verify" onsubmit="const x = (e) => {
         e.preventDefault();
          }" >
@@ -102,68 +110,95 @@ template.innerHTML = `
                     popovertargetaction="hide" popovertarget="popver-email"
                     formnovalidate="true">Confirm</button>
         </div>
+        <div is="gigya-otp-screen" class="gigya-otp-screen"  ></div>
          </form > 
 </div>
 `;
 export class IdentifierElement extends HTMLElement {
     static formAssociated = true;
+    static get observedAttributes() {
+        return ["required", "value"];
+    }
+
     #internals;
+    #input: HTMLInputElement;
     #shadowRoot:ShadowRoot;
     constructor()
     {
         super();
         this.#internals = this.attachInternals();
         this.#shadowRoot = this.attachShadow({mode: 'open', delegatesFocus: true});
-        const styleElement = document.createElement("style");
-        this.#shadowRoot.appendChild(styleElement);
-
-        this.#shadowRoot.appendChild(template.content.cloneNode(true));
-        styleElement.textContent =style
-
-        const input = this.#shadowRoot.querySelector<HTMLInputElement>('input')!;
-        input.addEventListener('change', ( E) => {
-            console.log('change', E, gigya);
-       
-
-            // this.saveInApiData({
-            //     identifier: formData?.loginID || formData?.identifier,
-            //     loginID: formData?.loginID,
-            // });
-            // gigya.accounts.auth.getMethods({
-            //     aToken: this._screenSet?.data?.aToken,
-            //     identifier: formData?.loginID || formData?.identifier,
-            //     callback: options.callback
-            // });
-            gigya.accounts.auth
-                .getMethods({identifier: input.value, callback: ({ methods,...res}) => {
-                        console.log('getMethods', res, methods);
-                        if (methods.length > 0){
-                            const popover = this.#shadowRoot.getElementById("popver-email");
-                            console.log('popover', popover);
-                            popover?.showPopover();
-
-                        }
-                        // // @ts-ignore
-                        // gigya.accounts.showScreenSet({
-                        //     screenSet: 'psr-PasswordlessLogin',
-                        //     startScreen: 'gigya-auth-methods-screen',
-                        //     initialMethod:'emailOtp',
-                        //     initialResponse:{
-                        //         loginID: input.value,
-                        //        
-                        //        
-                        //      }
-                        // })
-
-                    }});
-                 
-                    
-            this.#internals.setFormValue(input.value, input.value);
-        });
+        this.handleInput = this.handleInput.bind(this);
+        this.#shadowRoot.innerHTML = this.render();
+        this.#input  = this.#shadowRoot.querySelector<HTMLInputElement>('input')!;
+        this.#input.addEventListener('change', ( E) => {
+             console.log('change', E, gigya);
+            this.handleInput(this.#input.value);
+        }); 
     }
+
+    private render() {
+        return `
+    <style>
+      :host {
+        display: block;
+          inline-size: 100%;
+      block-size: auto;
+
+      }
+
+      /*input {*/
+      /*  display: block;*/
+      /*  padding: 5px;*/
+      /*}*/
+    </style> 
+    <slot>
+        <input type="text" show-valid-checkmark="true" class="gigya-input-text" name="identifier" autocomplete="email"> 
+     </slot>
+  `;
+    }
+
     formStateRestoreCallback(state: string)
     {
         this.#shadowRoot!.querySelector('input')!.value = state;
+    }
+
+    public checkValidity(): boolean {
+        return this.#internals.checkValidity();
+    }
+
+    public reportValidity(): void {
+         this.#internals.reportValidity();
+    }
+
+    public get validity(): ValidityState {
+        return this.#internals.validity;
+    }
+
+    public get validationMessage(): string {
+        return this.#internals.validationMessage;
+    }
+
+    attributeChangedCallback(name: string, _prev: any, next: string) {
+        this.#input.setAttribute(name, next);
+    }
+
+
+
+    // this.saveInApiData({
+    //     identifier: formData?.loginID || formData?.identifier,
+    //     loginID: formData?.loginID,
+    // });
+    // gigya.accounts.auth.getMethods({
+    //     aToken: this._screenSet?.data?.aToken,
+    //     identifier: formData?.loginID || formData?.identifier,
+    //     callback: options.callback
+    // });
+
+
+    private handleInput(value: string) {
+        this.#internals.setFormValue(value);
+        
     }
 }
 

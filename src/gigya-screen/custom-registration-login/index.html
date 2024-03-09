@@ -6,122 +6,13 @@
      data-on-pending-tfa-verification-screen="Default-RegistrationLogin/gigya-tfa-verification-screen"
      data-on-pending-password-change-screen="Default-RegistrationLogin/gigya-password-change-required-screen"
      data-on-existing-login-identifier-screen="Default-LinkAccounts/gigya-link-account-screen"
-     data-on-pending-recent-login-screen="Default-ReAuthentication/gigya-reauthentication-screen" data-width="364"
+     data-on-pending-recent-login-screen="Default-ReAuthentication/gigya-reauthentication-screen" 
+     data-width="364"
      data-responsive="true" data-dialog-style="modern"
      data-wizard-migration-keys="migrate_translation_handlers_unique_key"
      xmlns:gigya-conditional="http://www.w3.org/1999/xhtml" xmlns:gigya-expression="http://www.w3.org/1999/xhtml">
 
-    
-    <template id="register-layout" shadowrootmode> 
-        <div class="gigya-layout-row"></div>
-        <div class="gigya-layout-row with-divider">
-            <div  class="gigya-layout-cell responsive with-social-login">
-                <div class="gigya-layout-row">
-                    <h2 class="gigya-composite-control gigya-composite-control-header" style="display: block;">
-                        Quickly register with your social network:
-                    </h2>
-                    <div class="gigya-composite-control gigya-composite-control-social-login" style="display: block;">
-                        <div class="gigya-social-login">
-                            <param name="tabIndex" value="0">
-                            <param name="version" value="2">
-                            <param value="420" name="width" gigya-conditional:value="screenset.width < 430?100%">
-                            <param value="100" name="height">
-                            <param name="enabledProviders" value="facebook,googleplus,twitter,linkedin,amazon,yahoo">
-                            <param name="loginMode" value="standard">
-                            <param name="buttonsStyle" value="fullLogoColored">
-                            <param name="buttonTheme" value="normal">
-                            <param name="pagingButtonStyle" value="newArrows" gigya-conditional:value="screenset.width < 430?auto:">
-                            <param name="buttonSize" value="45">
-                            <param name="columns" gigya-conditional:value="screenset.width < 430?2:">
-                            <param name="showWhatsThis" value="false">
-                            <param name="showTermsLink" value="false">
-                            <param name="hideGigyaLink" value="true">
-                            <param name="_pluginCenterFix" value="true">
-                        </div>
-                    </div>
-                </div>
-                <div class="gigya-layout-row">
-                    <div class="gigya-layout-cell"></div>
-                    <div class="gigya-layout-cell"></div>
-                    <div class="gigya-clear"></div>
-                </div>
-                <div class="gigya-layout-row"></div>
-            </div>
-            <div class="gigya-layout-cell responsive with-divider">
-                <div class="separator-wrapper">
-                    <div class="or-separator">
-                        <div class="separator-line"></div>
-                        <label class="gigya-divider-content gigya-label-text gigya-composite-control gigya-composite-control-label" data-translation-key="LABEL_139978773486588850_LABEL">Or</label>
-                        <div class="separator-line"></div>
-                    </div>
-                </div>
-            </div>
-            <div   class="gigya-layout-cell responsive with-site-login">
-                <div class="gigya-layout-row">
-                    <h2 class="gigya-composite-control gigya-composite-control-header" data-translation-key="HEADER_63695688742051540_LABEL"></h2>
-                    <div class="gigya-layout-row">
-                        <div class="gigya-composite-control gigya-composite-control-textbox">
-                            <input type="text" class="gigya-input-text" name="email" show-valid-checkmark="true" data-display-name="" aria-label="Email" formnovalidate="formnovalidate" tabindex="0" data-gigya-placeholder="Email..." aria-label="Email" required>
-                        </div>
-                    </div>
-                </div>
-                <div class="box" data-width="100%" data-hight="100%"  >
-                    <div class="gigya-layout-row with-two-inputs data">
 
-                        <div class="gigya-layout-cell">
-                            <div class="gigya-composite-control gigya-composite-control-textbox" style="display: block;">
-                                <input type="text" aria-label="First name" class="gigya-input-text" name="profile.firstName" show-valid-checkmark="true" formnovalidate="formnovalidate" tabindex="0" data-gigya-placeholder="First Name..." aria-label="First Name">
-                                <span class="gigya-error-msg" data-bound-to="profile.firstName"></span>
-                            </div>
-                        </div>
-                        <div class="gigya-layout-cell">
-                            <div class="gigya-composite-control gigya-composite-control-textbox" style="display: block;">
-                                <input type="text" aria-label="Last name" class="gigya-input-text" name="profile.lastName" show-valid-checkmark="true" tabindex="0" data-gigya-placeholder="Last Name..." aria-label="Last Name">
-                                <span class="gigya-error-msg" data-bound-to="profile.lastName"></span>
-                            </div>
-                        </div>
-                    </div>
-                    <div  class="gigya-layout-row with-two-inputs">
-                        <div class="gigya-layout-cell">
-                            <div class="gigya-composite-control gigya-composite-control-password" style="display: block;">
-                                <input type="password" aria-label="Password" name="password" class="gigya-input-password" show-valid-checkmark="true" tabindex="0" show-password-strength="left" gigya-conditional:show-password-strength="viewport.width < 920?up" data-gigya-placeholder="Password..." aria-label="Password">
-                                <span class="gigya-error-msg" data-bound-to="password"></span>
-                            </div>
-                        </div>
-                        <div class="gigya-layout-cell">
-                            <div class="gigya-composite-control gigya-composite-control-password">
-                                <input type="password" aria-label="Retype password" class="gigya-input-password" name="passwordRetype" tabindex="0" show-valid-checkmark="true" data-required="true" data-gigya-placeholder="Confirm password" aria-label="Confirm password">
-                                <span class="gigya-error-msg" data-bound-to="passwordRetype"></span>
-                            </div>
-                        </div>
-                        <div class="gigya-clear"></div>
-                        <div class="gigya-clear"></div>
-                    </div>
-                    <div class="gigya-composite-control gigya-composite-control-checkbox">
-                        <input type="checkbox" id="gigya-checkbox-subscribe" name="data.subscribe" class="gigya-input-checkbox fd-checkbox" data-display-name="" tabindex="0">
-                        <label class="gigya-label" for="gigya-checkbox-subscribe">
-                            <span class="gigya-label-text gigya-checkbox-text" >Subscribe to our newsletter</span>
-                            <label class="gigya-required-display" data-bound-to="data.subscribe" style="display: none;">*</label>
-                        </label>
-                    </div>
-                    <div class="gigya-composite-control gigya-composite-control-checkbox">
-                        <input type="checkbox" id="gigya-checkbox-terms" name="data.terms" class="gigya-input-checkbox" data-display-name="" tabindex="0">
-                        <label class="gigya-label" for="gigya-checkbox-terms">
-                            <span class="gigya-label-text gigya-checkbox-text" >I have read and understood the<a class="gigya-terms-of-use" href="#">Terms of Use</a></span>
-                            <label class="gigya-required-display" data-bound-to="data.terms" style="display: none;">*</label>
-                        </label>
-                    </div>
-                </div>
-                <div class="gigya-composite-control gigya-composite-control-submit ">
-                    <input type="submit" class="gigya-input-submit" tabindex="0"  value="Submit">
-                </div>
-                <div class="gigya-error-display gigya-composite-control gigya-composite-control-form-error" data-bound-to="gigya-register-form">
-                    <div class="gigya-error-msg gigya-form-error-msg" data-bound-to="gigya-register-form"></div>
-                </div>
-            </div>
-        </div>
-
-    </template>
 
     <div id="otp-pop" popover>
         <div class="gigya-composite-control gigya-composite-control-textbox" style="display: block;">
@@ -134,10 +25,9 @@
     <div id="gigya-register-screen" data-width="auto" class="gigya-screen v2 portrait" 
          gigya-conditional:class="viewport.width < 550 ?gigya-screen v2 portrait mobile:viewport.width < 920 ?gigya-screen v2 portrait:" 
          data-on-pending-verification-screen="gigya-verification-sent-screen"  
-         data-on-success-screen = "psr-PasswordlessLogin/gigya-auth-methods-screen"
-         data-caption="Register">
+          data-caption="Register">
 
-        <form class="gigya-passwordless-register-form"  data-on-success-screen="gigya-otp-screen">
+        <form class="gigya-passwordless-register-form"  data-on-success-screen="gigya-auth-methods-screen">
             <div class="gigya-layout-row"></div>
             <div class="gigya-layout-row with-divider">
                 <div   class="gigya-layout-cell responsive with-social-login">
@@ -183,19 +73,19 @@
                 </div>
                 <div id="register-site-login" class="gigya-layout-cell responsive with-site-login">
                     <div class="gigya-layout-row">
-                        <h2 class="gigya-composite-control gigya-composite-control-header" data-translation-key="HEADER_63695688742051540_LABEL"></h2>
+                        <h2 class="gigya-composite-control gigya-composite-control-header" data-translation-key="HEADER_63695688742051540_LABEL">Register with your email</h2>
                         <div class="gigya-layout-row">
-
-                            <identifier-field required name="email" show-valid-checkmark="true" class="gigya-input-text"></identifier-field>
+                            <div class="gigya-composite-control gigya-composite-control-textbox" style="display: block;">
+                                    <identifier-field required name="email" >
+                                        <input type="text" show-valid-checkmark="true" class="gigya-input-text" name="identifier" autocomplete="email">
+                                    </identifier-field>
+                            </div>
+                        </div>
+                        
 <!--                                <input type="text" class="gigya-input-text" name="email" show-valid-checkmark="true" data-display-name="" aria-label="Email" formnovalidate="formnovalidate" tabindex="0" data-gigya-placeholder="Email..." aria-label="Email" required>-->
-                         </div>
                         
                         <div class="popover" data-bound-to="email" id="popver-email" popover>
-<!--                            <form id="otp-verify" onsubmit="const x = (e) => {-->
-<!--                                e.preventDefault();-->
-<!--                                document.getElementById('gigya-register-form').setAttribute('class', 'gigya-profile-form');-->
-<!--                                 document.getElementById('otp-verify').style.display = 'none';-->
-<!--                            }" >-->
+ 
                                 <h2 class="gigya-composite-control gigya-composite-control-header" data-translation-key="HEADER_63695688742051540_LABEL">Before we continue, please verify your email address </h2>
                                 <div class="gigya-composite-control gigya-composite-control-textbox" style="display: block;">
                                     <input  type="text" value="" name="code" data-required="true" autocomplete="off" class="gigya-input-text" formnovalidate="formnovalidate" tabindex="0" data-gigya-type="text"  data-gigya-placeholder="Enter the code sent to your email"  aria-label="Code">
@@ -234,7 +124,7 @@
                             </div>
                             <div class="gigya-layout-cell">
                                 <div class="gigya-composite-control gigya-composite-control-password">
-                                    <input type="password" aria-label="Retype password" class="gigya-input-password" name="passwordRetype" tabindex="0" show-valid-checkmark="true" data-required="true" data-gigya-placeholder="Confirm password" aria-label="Confirm password">
+                                    <input type="password" aria-label="Retype password" class="gigya-input-password"  tabindex="0" show-valid-checkmark="true"   data-gigya-placeholder="Confirm password" aria-label="Confirm password">
                                     <span class="gigya-error-msg" data-bound-to="passwordRetype"></span>
                                 </div>
                             </div>
@@ -256,11 +146,11 @@
                             </label>
                         </div>
                     </div>
+<!--                    <div class="gigya-composite-control gigya-composite-control-submit ">-->
+<!--                        <input type="button" class="gigya-input-submit" tabindex="0"  value="NEXT" data-switch-screen="gigya-otp-screen" >-->
+<!--                    </div>-->
                     <div class="gigya-composite-control gigya-composite-control-submit ">
-                        <input type="button" class="gigya-input-submit" tabindex="0"  value="NEXT" data-switch-screen="gigya-otp-screen" >
-                    </div>
-                    <div class="gigya-composite-control gigya-composite-control-submit ">
-                        <input type="submit" class="gigya-input-submit" tabindex="0"  value="Submit">
+                        <input type="submit" class="gigya-input-submit" tabindex="0"  value="Submit" >
                     </div>
                     <div class="gigya-error-display gigya-composite-control gigya-composite-control-form-error" data-bound-to="gigya-register-form">
                         <div class="gigya-error-msg gigya-form-error-msg" data-bound-to="gigya-register-form"></div>
@@ -271,36 +161,112 @@
         <a id="switch-a" style="display: none"  data-switch-screen="gigya-otp-screen" class="gigya-composite-control gigya-composite-control-link" >Have an account already?</a>
     </div>
 
- 
+    <div id="gigya-auth-methods-screen" data-width="auto" gigya-conditional:class="viewport.width < 500 ? gigya-screen v2 portrait mobile:" class="gigya-screen v2 portrait" data-on-pending-verification-screen="psr-RegistrationLogin/gigya-verification-sent-screen" data-caption="Continue with">
+        <form class="gigya-auth-methods-form" id="gigya-auth-methods-form" data-auto-skip="false">
+            <div class="gigya-layout-row">
+                <h2 class="gigya-composite-control gigya-composite-control-header" data-translation-key="HEADER_111117027845426430_LABEL"></h2></div>
+            <div class="gigya-layout-row">
+                <div class="gigya-layout-cell"></div>
+                <div class="gigya-layout-cell"></div>
+                <div class="gigya-clear"></div>
+            </div>
+            <div class="gigya-layout-row">
+                <div class="gigya-layout-cell">
+                    <div class="gigya-layout-row">
+                        <div class="gigya-layout-cell"></div>
+                        <div class="gigya-layout-cell"></div>
+                        <div class="gigya-clear"></div>
+                    </div>
+                </div>
+                <div class="gigya-layout-cell">
+                    <div class="gigya-layout-row">
+                        <div class="gigya-layout-cell"></div>
+                        <div class="gigya-layout-cell"></div>
+                        <div class="gigya-clear"></div>
+                    </div>
+                </div>
+                <div class="gigya-clear"></div>
+            </div>
+            <div class="gigya-layout-row">
+                <div class="gigya-container gigya-visible-when" data-auth-method-render="passkeyLogin">
+                    <div class="gigya-composite-control gigya-passKey-widget gigya-composite-control-passkey-login-widget" data-auth-method="passkeyLogin">   
+                    <button class="gigya-passkey-control-button gigya-input-button" type="button" name="passkey">  
+                        <i class="gigya-icon gigya-passkey-icon" aria-hidden="true" title="Login with Passkey"></i>         <span class="gigya-passkey-label" data-translation-key="PASSKEY_LOGIN_WIDGET_86368071951877680_VALUE"></span>     </button>      <div class="gigya-error-display">         <span class="gigya-error-msg" data-bound-to="passkey"></span>     </div> </div></div><div class="gigya-container gigya-visible-when" data-auth-method-render="passkeyRegister"><div class="gigya-composite-control gigya-passKey-widget gigya-composite-control-passkey-register-widget" data-auth-method="passkeyRegister" data-passkey-behavior="submit">     <button class="gigya-passkey-control-button gigya-input-button" type="button" name="passkey">         <i class="gigya-icon gigya-passkey-icon" aria-hidden="true" title="Login with Passkey"></i>         <span class="gigya-passkey-label" data-translation-key="PASSKEY_REGISTER_WIDGET_138604537424779940_VALUE"></span>     </button>      <div class="gigya-error-display">         <span class="gigya-error-msg" data-bound-to="passkey"></span>     </div> </div></div><div class="gigya-container gigya-visible-when" data-condition="(authMethods.indexOf('passkeyLogin') >= 0 || authMethods.indexOf('passkeyRegister') >= 0) &amp;&amp; authMethods.length > 1"><label class="gigya-composite-control gigya-composite-control-label label-divider" data-binding="true" style="text-align: center;" data-translation-key="LABEL_108028907545683170_LABEL"></label></div><div class="gigya-composite-control gigya-composite-control-button gigya-conditional">
+                <input type="button" class="gigya-input-button gigya-auth-method" tabindex="0" data-switch-screen="gigya-password-auth-method-screen" data-auth-method="password"  value="Password">
+            </div><div class="gigya-composite-control gigya-composite-control-button gigya-conditional">
+                <input type="button" class="gigya-input-button gigya-auth-method" tabindex="0" data-switch-screen="gigya-push-auth-method-screen" data-auth-method="push"  value="Push">
+            </div><div class="gigya-composite-control gigya-composite-control-button gigya-conditional">
+                <input type="button" class="gigya-input-button gigya-auth-method" tabindex="0" data-switch-screen="gigya-magic-link-auth-method-screen" data-auth-method="magicLink"  value="Link">
+            </div><div class="gigya-composite-control gigya-composite-control-button gigya-conditional">
+                <input type="button" class="gigya-input-button gigya-auth-method" tabindex="0" data-switch-screen="gigya-email-code-auth-method-screen" data-auth-method="emailOtp"  value="Email OTP">
+            </div></div>
+            <div class="gigya-layout-row">
+                <div class="gigya-layout-cell"></div>
+                <div class="gigya-layout-cell"></div>
+                <div class="gigya-clear"></div>
+            </div>
+            <div class="gigya-layout-row">
+                <div class="gigya-layout-cell">
+                    <div class="gigya-layout-row">
+                        <div class="gigya-layout-cell"></div>
+                        <div class="gigya-layout-cell"></div>
+                        <div class="gigya-clear"></div>
+                    </div>
+                </div>
+                <div class="gigya-layout-cell">
+                    <div class="gigya-layout-row">
+                        <div class="gigya-layout-cell"></div>
+                        <div class="gigya-layout-cell"></div>
+                        <div class="gigya-clear"></div>
+                    </div>
+                </div>
+                <div class="gigya-clear"></div>
+            </div>
+            <div class="gigya-layout-row"><div class="gigya-composite-control gigya-spacer" data-units="1" style="height: 1px;"></div><a class="gigya-composite-control gigya-composite-control-link" data-binding="true" target="_blank" data-switch-screen="gigya-passwordless-login-screen" data-translation-key="LINK_146950611669725570_LABEL"></a></div>
+            <div class="gigya-clear"></div>
+        </form>
+    </div>
 
-    <div id="gigya-otp" data-width="auto" class="gigya-screen v2 portrait"
-         gigya-conditional:class="viewport.width < 550 ?gigya-screen v2 portrait mobile:viewport.width < 920 ?gigya-screen v2 portrait:"
-         data-caption="Register">
-        <div is="register-layout" ></div>
-    </div>
-    <div id="gigya-verification-sent-screen" data-width="auto" class="gigya-screen v2 portrait"
-         gigya-conditional:class="viewport.width < 550 ?gigya-screen v2 portrait mobile:viewport.width < 920 ?gigya-screen v2 portrait:"
-         data-caption="Register">
-        <div class="gigya-layout-row">
-            <h2 class="gigya-composite-control gigya-composite-control-header" data-translation-key="HEADER_63695688742051540_LABEL">Before we continue, please verify your email address </h2>
-            <div class="gigya-composite-control gigya-composite-control-textbox" style="display: block;">
-                <input  type="text" value="" name="code" data-required="true" autocomplete="off" class="gigya-input-text" formnovalidate="formnovalidate" tabindex="0" data-gigya-type="text"  data-gigya-placeholder="Enter the code sent to your email"  aria-label="Code">
-                <span class="gigya-error-msg" data-bound-to="code"></span>
+
+    <template id="gigya-otp-screen" > 
+        <div id="gigya-email-code-auth-method-screen" data-width="auto" class="gigya-screen v2 portrait" gigya-conditional:class="viewport.width < 500 ?gigya-screen v2 portrait mobile:" gigya-expression:data-caption="screenset.translations['GIGYA_EMAIL_CODE_AUTH_METHOD_SCREEN_CAPTION']">
+        <form class="gigya-email-code-auth-method-form" id="gigya-email-code-auth-method-form">
+            <div class="gigya-layout-row">
+                <label for="gigya-textbox-email-otp-auth" class="gigya-label-text gigya-composite-control gigya-composite-control-label" data-binding="true" data-translation-key="LABEL_110155625417325040_LABEL"></label>
             </div>
-            <div class="gigya-composite-control gigya-composite-control-submit ">
-                <input type="submit" class="gigya-input-submit" tabindex="0"  value="Confirm">
+            <div class="gigya-layout-row">
+                <div class="gigya-composite-control gigya-composite-control-textbox" style="display: block;">
+                    <input id="gigya-textbox-email-otp-auth" type="text" value="" name="code" data-required="true" autocomplete="off" class="gigya-input-text" formnovalidate="formnovalidate" tabindex="0" data-gigya-type="text" gigya-expression:data-gigya-placeholder="screenset.translations['TEXTBOX_104563282957373310_PLACEHOLDER']" gigya-expression:aria-label="screenset.translations['TEXTBOX_104563282957373310_PLACEHOLDER']">
+                    <span class="gigya-error-msg" data-bound-to="code"></span>
+                </div>
             </div>
-        </div>
+            <div class="gigya-layout-row">
+                <div class="gigya-composite-control gigya-composite-control-submit" style="display: block;">
+                    <input type="submit" class="gigya-input-submit" tabindex="0" data-gigya-type="submit" gigya-expression:value="screenset.translations['SUBMIT_80310548192090850_VALUE']">
+                </div>
+                <div class="gigya-error-display gigya-composite-control gigya-composite-control-form-error" data-bound-to="gigya-email-code-auth-method-form">
+                    <div class="gigya-error-msg gigya-form-error-msg" data-bound-to="gigya-email-code-auth-method-form"></div>
+                </div>
+            </div>
+            <div class="gigya-layout-row">
+                <div class="gigya-layout-row gigya-email-otp-links">
+                    <div class="gigya-layout-cell gigya-email-otp-links-left">
+                        <div class="gigya-container gigya-visible-when" data-condition="authMethods.length > 1"><a class="gigya-composite-control gigya-composite-control-link gigya-email-otp-change-method-link" data-binding="true" target="_blank" data-switch-screen="gigya-auth-methods-screen" data-translation-key="LINK_114318864490895001_LABEL"></a></div>
+                        <div class="gigya-container gigya-visible-when" data-condition="authMethods.length === 1"><a class="gigya-composite-control gigya-composite-control-link gigya-email-otp-change-method-link" data-binding="true" target="_blank" data-switch-screen="gigya-passwordless-login-screen" data-translation-key="LINK_130096189626726381_LABEL"></a></div>
+                    </div>
+                    <div class="gigya-layout-cell gigya-email-otp-links-right">
+                        <a class="gigya-composite-control gigya-composite-control-link" data-binding="true" data-disable-on-render="true" data-gigya-api-link="accounts.auth.otp.email.sendCode" href="javascript:void(0)" tabindex="0" data-translation-key="LINK_149410999765063800_LABEL"></a>
+                    </div>
+                </div>
+            </div>
+        </form>
     </div>
-    <div id="gigya-otp-screen" data-width="auto" class="gigya-screen v2 portrait"
-         gigya-conditional:class="viewport.width < 550 ?gigya-screen v2 portrait mobile:viewport.width < 920 ?gigya-screen v2 portrait:"
-         data-caption="Register">
-         <div is="register-layout" ></div>
- 
-    </div>
- 
+    </template>
+
+
 
 </div>
+
 
 
 
