@@ -20,7 +20,6 @@ import {
 import {assign, createMachine, interpret} from "@xstate/fsm";
 import {otp} from "../otp.ts";
 
-
 //describe the state identifier, login-id-available, registration-methods, login-methods
  
 
@@ -88,21 +87,19 @@ const paswordlessRegistrationFlow= {
             entry: ['log','render:gigya-auth-methods-form'],
             on: {
                 'success': 'complete',
-                'failure': 'failure'
-            }
+                'failure': 'failure',
+             }  
         },
-        'complete': {
-            
+        'complete': { 
             entry: ['log','render:gigya-profile-form'],
             on: {
                 'success': 'success',
                 'failure': 'failure'
             }
-        },
-  
-    
+        }, 
         'success': {
-            
+            entry: ['log','render:_finish'],
+
         },
         'failure': {
            
@@ -152,6 +149,9 @@ export class PasswordlessRegistrationLogin extends HTMLElement {
                 }),
                 'render:gigya-profile-form': assign({
                     nextScreen: ( _c,_e) => 'gigya-profile-screen'
+                }),
+                'render:_finish': assign({
+                    nextScreen: ( _c,_e) => undefined
                 }),
 
                 // 'render:gigya-register-form': this.switchScreen.bind(this, {form:'gigya-register-form', screen:'gigya-register-screen'} ),
@@ -209,6 +209,10 @@ export class PasswordlessRegistrationLogin extends HTMLElement {
      onBeforeSubmit(e:IBeforeSubmitEvent):void | boolean {
         console.log('onBeforeSubmit', e);
         this.#service.send( {
+            type: 'success'
+ 
+        });
+        this.#service.send( {
             type: 'identifier',
             identifier: e.formData.identifier
 
@@ -235,12 +239,18 @@ export class PasswordlessRegistrationLogin extends HTMLElement {
 
     onAfterScreenLoad(e:IAfterScreenLoadEvent){
         console.log("onAfterScreenLoad",e, this.#service.state.context)
+        // if(e.currentScreen === 'gigya-auth-methods-screen'  ){
+        //     this.#service.send({
+        //         type: 'screen.gigya-auth-methods-screen',
+        //     });
+        // }
         this.#service.send({
             type: 'reset-next-screen',
         });
     }
     onBeforeScreenLoad(_e:IBeforeScreenLoadEvent) {
         console.log("onBeforeScreenLoad", this.#service.state.context)
+        
         return {
             identifier: this.#service.state.context.identifier,
             profile: {
@@ -248,7 +258,7 @@ export class PasswordlessRegistrationLogin extends HTMLElement {
             },
             loginID: this.#service.state.context.identifier,
             email: this.#service.state.context.identifier,
-            nextScreen: this.#service.state.context.nextScreen,
+            // nextScreen: this.#service.state.context.nextScreen,
             response: {
                 ..._e.response,
             }
@@ -270,13 +280,14 @@ export class PasswordlessRegistrationLogin extends HTMLElement {
  
         document.getElementById('root')?.showPopover();
         const show_screen_set= gigya.accounts.showScreenSet.bind(this,{
-            screenSet: this.screenSet ,
+            screenSet: "exampleScreenSet" ,
             containerID: this.container,
             customLang: translations.en,
             onBeforeSubmit: this.onBeforeSubmit.bind(this),
             onFieldChanged: this.onFieldChanged.bind(this),
             onBeforeScreenLoad:this.onBeforeScreenLoad.bind(this), 
-            onAfterScreenLoad :this.onAfterScreenLoad.bind(this)
+            onAfterScreenLoad :this.onAfterScreenLoad.bind(this),
+            onAfterSubmit: this.logScreen.bind(this),
              
         })
         gigyaService.subscribe(e=>{
@@ -299,8 +310,12 @@ export class PasswordlessRegistrationLogin extends HTMLElement {
         this.innerHTML = `<div id="root" popover="manual">
                                  <style>
                                     ${css}
+                                  
                                     input {
                                       padding-left: 1rem;
+                                    }
+                                    input.gigya-input-checkbox {
+                                      border-bottom-color: #000;
                                     }
                                  </style>
                                  <div id="gigya-screen-set-container"></div>
@@ -325,7 +340,7 @@ export class PasswordlessRegistrationLogin extends HTMLElement {
                     auth : `${emailIdentifier({name: 'email'})}  ${password()} ${profileFields()} `
                 }),
                 render_screen({
-                    form:'gigya-email-code-auth-method-form', screen:'gigya-auth-methods-screen',
+                    form:'gigya-email-code-auth-method-form', screen:'gigya-email-code-auth-method-screen',
                     success_screen: 'gigya-profile-screen',
                     auth:  `<h2 class="gigya-composite-control gigya-composite-control-header">Before we continue, please verify your email address</h2>
                              ${emailIdentifier({name: 'email'})}  
@@ -336,9 +351,36 @@ export class PasswordlessRegistrationLogin extends HTMLElement {
                               
                 }),
                 render_screen({
+                    form:'gigya-auth-methods-form', screen:'gigya-auth-methods-screen',
+                    success_screen: 'gigya-profile-screen',
+                    submit_button:false,
+                    auth:  `<h2 class="gigya-composite-control gigya-composite-control-header">Authenticate With</h2>
+                             ${emailIdentifier({name: 'email'})}  
+                                 <div class="gigya-layout-row">
+                                    <div class="gigya-container gigya-visible-when" data-auth-method-render="passkeyLogin">
+                                    <div class="gigya-composite-control gigya-passKey-widget gigya-composite-control-passkey-login-widget" data-auth-method="passkeyLogin">    
+                                    <button class="gigya-passkey-control-button gigya-input-button" type="button" name="passkey">  
+                                     <i class="gigya-icon gigya-passkey-icon" aria-hidden="true" title="Login with Passkey"></i>         <span class="gigya-passkey-label" data-translation-key="PASSKEY_LOGIN_WIDGET_86368071951877680_VALUE"></span>     </button>      <div class="gigya-error-display">         <span class="gigya-error-msg" data-bound-to="passkey"></span>     </div> </div></div><div class="gigya-container gigya-visible-when" data-auth-method-render="passkeyRegister"><div class="gigya-composite-control gigya-passKey-widget gigya-composite-control-passkey-register-widget" data-auth-method="passkeyRegister" data-passkey-behavior="submit">    
+                                      <button class="gigya-passkey-control-button gigya-input-button" type="button" name="passkey">         <i class="gigya-icon gigya-passkey-icon" aria-hidden="true" title="Login with Passkey"></i>         <span class="gigya-passkey-label" data-translation-key="PASSKEY_REGISTER_WIDGET_138604537424779940_VALUE"></span>     </button>      <div class="gigya-error-display">         <span class="gigya-error-msg" data-bound-to="passkey"></span>     </div> </div></div><div class="gigya-container gigya-visible-when" data-condition="(authMethods.indexOf('passkeyLogin') >= 0 || authMethods.indexOf('passkeyRegister') >= 0) &amp;&amp; authMethods.length > 1"><label class="gigya-composite-control gigya-composite-control-label label-divider" data-binding="true" style="text-align: center;" data-translation-key="LABEL_108028907545683170_LABEL"></label>
+                                </div>
+                                <div class="gigya-composite-control gigya-composite-control-button gigya-conditional">
+                                    <input type="button" class="gigya-input-button gigya-auth-method" tabindex="0" data-switch-screen="gigya-password-auth-method-screen" data-auth-method="password" gigya-expression:value="screenset.translations['AUTHMETHOD_67103775111210550_VALUE']" value="Your Password">
+                                </div><div class="gigya-composite-control gigya-composite-control-button gigya-conditional">
+                                    <input type="button" class="gigya-input-button gigya-auth-method" tabindex="0" data-switch-screen="psr-PasswordlessLogin/gigya-push-auth-method-screen" data-auth-method="push" gigya-expression:value="screenset.translations['AUTHMETHOD_129069343527892940_VALUE']" value="Push">
+                                </div><div class="gigya-composite-control gigya-composite-control-button gigya-conditional">
+                                    <input type="button" class="gigya-input-button gigya-auth-method" tabindex="0" data-switch-screen="psr-PasswordlessLogin/gigya-magic-link-auth-method-screen" data-auth-method="magicLink" gigya-expression:value="screenset.translations['AUTHMETHOD_129069343527892951_VALUE']" value="Link to your email">
+                                </div><div class="gigya-composite-control gigya-composite-control-button gigya-conditional">
+                                    <input type="button" class="gigya-input-button gigya-auth-method" tabindex="0" data-switch-screen="gigya-email-code-auth-method-screen" data-auth-method="emailOtp" gigya-expression:value="screenset.translations['AUTHMETHOD_98080695010138960_VALUE']" value="One time code to your email">
+                                </div></div>
+                              <div class="box" data-width="100%" data-hight="100%"  >
+                                ${profileFields()} 
+                              </div>`
+
+                }),
+                render_screen({
                     screen: 'gigya-profile-screen',
                     form:'gigya-profile-form',
-                    auth: ` ${emailIdentifier({name: 'email'})}  ${password()}`,
+                    auth: ` ${emailIdentifier({name: 'email'})} ${password()} ${profileFields()}`,
                     success_screen: '_finish'
                 })
             ]
@@ -417,12 +459,14 @@ function render_screen({
                            auth,
                            screen,
                            form,
-                           success_screen
+                           success_screen,
+                           submit_button = submit({text: "Submit"})
                        }:{
     screen: string,
     form: string,
     success_screen: string,
-    auth:string
+    auth:string,
+    submit_button?: string| Boolean
 }) {
     return ` 
                                   <div id="${screen}" class="gigya-screen v2 portrait dialog" 
@@ -434,13 +478,8 @@ function render_screen({
                                          <div class="gigya-layout-row responsive with-divider">
                                          ${social_login}
                                          ${divider({text: "Or"})}  
-                                        ${auth}
-                                        
-                                         <div class="gigya-container gigya-visible-when" data-condition="authMethods.length === 1">
-                                               <a class="gigya-composite-control gigya-composite-control-link gigya-email-otp-change-method-link" data-binding="true" target="_blank" data-switch-screen="gigya-passwordless-login-screen" data-translation-key="LINK_130096189626726381_LABEL"></a>
-                                          </div>
-
-                                         ${submit({text: "Submit"})}
+                                        ${auth} 
+                                         ${submit_button || `<></>`}
                                         <div class="gigya-error-display gigya-composite-control gigya-composite-control-form-error" data-bound-to="${form}">
                                             <div class="gigya-error-msg gigya-form-error-msg" data-bound-to="${form}"></div>
                                         </div>
