@@ -125,16 +125,18 @@ export interface IHideEvent extends IBaseScreenSetEvent {
     reason: string;
 }
 
-export type BeforeValidationEventHandler = (e: IBeforeValidationEvent) => object | Promise<Object>;
+export type BeforeValidationEventHandler = (e: IBeforeValidationEvent) => {validationErrors?: IErrorInfo[]} | Promise<{validationErrors?: IErrorInfo[]}>;
 export type BeforeSubmitEventHandler = (e: IBeforeSubmitEvent) => void | boolean; // Return Value: The event handlerexport declare function may return "false" to cancel the submission.
-export type BeforeScreenLoadEventHandler = (e: IBeforeScreenLoadEvent) => any;
+export type BeforeScreenLoadEventHandler = (e: IBeforeScreenLoadEvent) => void | Partial<IBeforeScreenLoadEvent>;
 export type AfterScreenLoadEventHandler = (e: IAfterScreenLoadEvent) => void;
 export type FieldChangedEventHandler = (e: IOnFieldChangedEvent) => void;
 export type AfterValidationEventHandler = (e: IAfterValidationEvent) => void;
 export type AfterSubmitEventHandler = (e: IAfterSubmitEvent) => void;
-export type SubmitEventHandler = (e: ISubmitEvent) => void;
+export type SubmitEventHandler = (e: ISubmitEvent) => void | Promise<Object>;
 export type ErrorEventHandler = (e: IErrorEvent) => void;
 export type HideEventHandler = (e: IHideEvent) => void;
+
+ 
 
 export interface ScreenSetHooks {
     onHide: Array<HideEventHandler>;
