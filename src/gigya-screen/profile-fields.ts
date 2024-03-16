@@ -16,17 +16,17 @@ export const profileFields = ( ) =>
                             </div>
                         </div>
                         <div class="gigya-composite-control gigya-composite-control-checkbox">
-                            <input type="checkbox" id="gigya-checkbox-subscribe" name="data.subscribe" class="gigya-input-checkbox fd-checkbox" data-display-name="" tabindex="0">
+                            <input type="checkbox"   name="subscriptions.news.email.isSubscribed" class="gigya-input-checkbox fd-checkbox" data-display-name="" tabindex="0">
                             <label class="gigya-label" for="gigya-checkbox-subscribe">
                                 <span class="gigya-label-text gigya-checkbox-text" >Subscribe to our newsletter</span>
-                                <label class="gigya-required-display" data-bound-to="data.subscribe" style="display: none;">*</label>
+                                <label class="gigya-required-display" data-bound-to="subscriptions.news.email.isSubscribed" style="display: none;">*</label>
                             </label>
                         </div>
                         <div class="gigya-composite-control gigya-composite-control-checkbox">
-                            <input type="checkbox" id="gigya-checkbox-terms" name="data.terms" class="gigya-input-checkbox" data-display-name="" tabindex="0">
+                            <input type="checkbox"   name="preferences.other.isConsentGranted" class="gigya-input-checkbox" data-display-name="" tabindex="0">
                             <label class="gigya-label" for="gigya-checkbox-terms">
                                 <span class="gigya-label-text gigya-checkbox-text" >I have read and understood the<a class="gigya-terms-of-use" href="#">Terms of Use</a></span>
-                                <label class="gigya-required-display" data-bound-to="data.terms" style="display: none;">*</label>
+                                <label class="gigya-required-display" data-bound-to="preferences.other.isConsentGranted" style="display: none;">*</label>
                             </label>
                         </div>
              </div>`;
